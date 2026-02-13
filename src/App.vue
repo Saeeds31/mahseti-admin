@@ -11,7 +11,9 @@ const store = useAdmin();
 
 if (getCookie('token')) {
   axios.defaults.headers.common.Authorization = `Bearer ${getCookie('token')}`
+  store.getAdminDetail();
   store.getNotifications();
+
 
 } else {
   router.push("/login")
