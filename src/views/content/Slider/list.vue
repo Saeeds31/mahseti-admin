@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-4 sliders">
+  <div class="container mt-4 sliders" v-if="checkPermission(['slider_view'])">
 
     <!-- فیلتر -->
     <div class="card mb-3">
@@ -63,6 +63,9 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const sliders = ref({ data: [] });
 const loading = ref(false);
 const filters = ref({ search: "" });

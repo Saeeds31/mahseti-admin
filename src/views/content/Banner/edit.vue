@@ -1,5 +1,5 @@
 <template>
-  <div class="container py-4">
+  <div class="container py-4" v-if="checkPermission(['banner_update'])">
     <b-card>
       <h5 class="mb-3">ویرایش بنر</h5>
       <b-form @submit.prevent="handleSubmit">
@@ -84,6 +84,9 @@ import { BForm, BFormGroup, BFormInput, BFormCheckbox, BButton, BCard, BRow, BCo
 import { useRoute } from "vue-router"
 import Treeselect from 'vue3-treeselect'
 import 'vue3-treeselect/dist/vue3-treeselect.css'
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const route = useRoute()
 const form = reactive({
   title: "",

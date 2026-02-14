@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid class="py-4">
+  <b-container fluid class="py-4" v-if="checkPermission(['specifications_store'])">
     <b-row>
       <b-col cols="12" lg="8" class="mx-auto">
         <b-card header="ثبت ویژگی جدید">
@@ -48,6 +48,9 @@ import axios from "axios"
 import { toast } from "vue3-toastify"
 import "vue3-toastify/dist/index.css"
 import { useRouter } from "vue-router"
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const router = useRouter();
 const form = ref({
   title: "",

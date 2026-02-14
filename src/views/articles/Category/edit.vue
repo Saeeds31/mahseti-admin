@@ -1,5 +1,5 @@
 <template>
-  <div class="container py-4">
+  <div class="container py-4" v-if="checkPermission(['articlecategory_update'])">
     <b-card>
       <h5 class="mb-3">ویرایش دسته‌بندی مقاله</h5>
       <b-form @submit.prevent="handleSubmit">
@@ -74,6 +74,9 @@ import Treeselect from 'vue3-treeselect'
 import 'vue3-treeselect/dist/vue3-treeselect.css'
 import Editor from '@/components/shared/Editor.vue'
 import { useRoute } from 'vue-router'
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const route = useRoute()
 const form = reactive({
   title: '',

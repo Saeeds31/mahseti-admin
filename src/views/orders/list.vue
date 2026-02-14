@@ -1,5 +1,5 @@
 <template>
-    <div class="container mt-4 orders-page">
+    <div class="container mt-4 orders-page" v-if="checkPermission(['order_view'])">
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4>مدیریت سفارش‌ها</h4>
@@ -112,6 +112,9 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const orders = ref({ data: [] });
 const loading = ref(false);
 const filters = ref({

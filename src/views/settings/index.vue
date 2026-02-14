@@ -1,5 +1,5 @@
 <template>
-    <div class="container mt-4">
+    <div class="container mt-4" v-if="checkPermission(['setting_view', 'setting_store'])">
         <!-- انتخاب گروه -->
         <div class="mb-3">
             <label class="form-label">انتخاب گروه</label>
@@ -60,6 +60,10 @@ import editor from "@/components/shared/editor.vue";
 
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
+
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const selectedGroup = ref(null);
 const groupOptions = ref([]);
 const settings = ref([]);

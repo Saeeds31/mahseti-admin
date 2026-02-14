@@ -1,5 +1,5 @@
 <template>
-    <div class="container mt-4">
+    <div class="container mt-4" v-if="checkPermission(['user_store'])">
         <h3>ایجاد کاربر جدید</h3>
         <form @submit.prevent="submitForm" class="row g-3">
             <!-- نام کامل -->
@@ -54,6 +54,9 @@ import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 import moment from 'moment-jalaali';
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const form = ref({
     full_name: '',
     mobile: '',

@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-4">
+  <div class="container mt-4" v-if="checkPermission(['shipping_update'])">
     <h3>ویرایش بازه حمل و نقل</h3>
     <form @submit.prevent="updateForm" class="row g-3">
       <!-- Province -->
@@ -49,6 +49,9 @@ import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 import Treeselect from 'vue3-treeselect'
 import 'vue3-treeselect/dist/vue3-treeselect.css'
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const route = useRoute()
 const router = useRouter()
 

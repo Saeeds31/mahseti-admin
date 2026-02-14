@@ -1,5 +1,5 @@
 <template>
-    <div class="container shipping-methods">
+    <div class="container shipping-methods" v-if="checkPermission(['shipping_view'])">
         <!-- فیلتر جستجو -->
         <div class="card mb-3">
             <div class="card-body">
@@ -75,6 +75,9 @@ import { ref, onMounted } from "vue";
 import Swal from "sweetalert2";
 import axios from "axios";
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const shippingMethods = ref({ data: [] });
 const loading = ref(false);
 const filters = ref({ search: "" });

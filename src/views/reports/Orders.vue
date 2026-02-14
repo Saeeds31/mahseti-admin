@@ -1,5 +1,5 @@
 <template>
-    <div class="container py-4">
+    <div class="container py-4" v-if="checkPermission(['report_orders'])">
         <!-- فیلترها -->
         <div class="card mb-4">
             <div class="card-body">
@@ -123,6 +123,9 @@ import axios from "axios";
 import { ref } from "vue";
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from "chart.js";
 import { Bar } from "vue-chartjs";
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const currentPage = ref(1)
 const loading = ref(false)
 

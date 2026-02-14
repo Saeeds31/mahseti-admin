@@ -1,5 +1,5 @@
 <template>
-    <div class="container py-4">
+    <div class="container py-4" v-if="checkPermission(['coupon_update'])">
         <b-card>
             <h5 class="mb-3">ویرایش کوپن</h5>
             <b-form @submit.prevent="handleSubmit">
@@ -76,6 +76,9 @@ import { BForm, BFormGroup, BFormInput, BFormSelect, BFormCheckbox, BButton, BCa
 import { useRoute } from 'vue-router'
 import moment from 'moment-jalaali';
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const route = useRoute();
 const form = reactive({
     code: '',

@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-4 specifications-page">
+  <div class="container mt-4 specifications-page" v-if="checkPermission(['specifications_view'])">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h4>مدیریت مشخصات</h4>
@@ -66,6 +66,9 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 
 const specifications = ref({ data: [] });
 const loading = ref(false);

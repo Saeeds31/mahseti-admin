@@ -1,5 +1,5 @@
 <template>
-  <div class="product-edit container py-4">
+  <div class="product-edit container py-4" v-if="checkPermission(['menu_list'])">
     <!-- دکمه‌های مرحله‌ای -->
     <div class="step-buttons d-flex flex-wrap align-items-center mb-4">
       <template v-for="(step, index) in steps" :key="index">
@@ -219,6 +219,9 @@ import Editor from '@/components/shared/Editor.vue'
 import { toast } from 'vue3-toastify'
 import axios from 'axios'
 import { useRoute, useRouter } from 'vue-router'
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 let route = useRoute();
 let router = useRouter();
 const productId = route.params.id // آی‌دی محصول مورد ویرایش

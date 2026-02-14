@@ -1,5 +1,5 @@
 <template>
-    <div class="container mt-4">
+    <div class="container mt-4" v-if="checkPermission(['address_store'])">
         <h3>افزودن آدرس جدید</h3>
         <form @submit.prevent="submitForm" class="row g-3">
             <!-- انتخاب استان -->
@@ -57,6 +57,9 @@ import 'vue3-toastify/dist/index.css'
 import Treeselect from 'vue3-treeselect'
 import 'vue3-treeselect/dist/vue3-treeselect.css'
 import { useRoute } from 'vue-router'
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const form = ref({
     receiver_name: '',
     city_id: null,

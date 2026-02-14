@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-4">
+  <div class="container mt-4" v-if="checkPermission(['shipping_store'])">
     <h3>ساخت بازه قیمتی</h3>
     <form @submit.prevent="submitForm" class="row g-3">
       <!-- Province -->
@@ -52,6 +52,9 @@ import Treeselect from 'vue3-treeselect'
 import 'vue3-treeselect/dist/vue3-treeselect.css'
 import { useRoute } from 'vue-router'
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 
 const form = reactive({
   city_id: null,

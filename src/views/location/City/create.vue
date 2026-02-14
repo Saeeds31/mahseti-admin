@@ -1,5 +1,5 @@
 <template>
-  <div class="container py-4">
+  <div class="container py-4" v-if="checkPermission(['city_view'])">
     <b-card>
       <h5 class="mb-3">ایجاد شهر</h5>
       <b-form @submit.prevent="handleSubmit">
@@ -41,6 +41,9 @@ import Treeselect from 'vue3-treeselect'
 import 'vue3-treeselect/dist/vue3-treeselect.css'
 import { BForm, BFormGroup, BFormInput, BButton, BCard, BRow, BCol } from 'bootstrap-vue-3'
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const form = reactive({
   province_id: null,
   name: '',

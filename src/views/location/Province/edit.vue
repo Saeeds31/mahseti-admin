@@ -1,5 +1,5 @@
 <template>
-  <div class="container py-4">
+  <div class="container py-4" v-if="checkPermission(['province_update'])">
     <b-card>
       <h5 class="mb-3">ویرایش استان</h5>
       <b-form @submit.prevent="handleSubmit">
@@ -28,6 +28,9 @@ import 'vue3-toastify/dist/index.css'
 import { BForm, BFormGroup, BFormInput, BButton, BCard, BRow, BCol } from 'bootstrap-vue-3'
 import { useRoute } from 'vue-router'
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const route = useRoute();
 const form = reactive({
   name: '',

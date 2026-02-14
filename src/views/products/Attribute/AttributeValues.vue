@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-4">
+  <div class="container mt-4" v-if="checkPermission(['attributes_view'])">
     <div class="row">
       <!-- جدول -->
       <div class="col-md-7">
@@ -78,6 +78,9 @@ import Swal from "sweetalert2";
 import { useRoute } from "vue-router";
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const route = useRoute();
 const attributeId = route.params.id; // آیدی ویژگی از URL
 

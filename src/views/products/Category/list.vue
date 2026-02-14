@@ -57,6 +57,9 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const categories = ref();
 const loading = ref(false);
 const filters = ref({ title: "" });

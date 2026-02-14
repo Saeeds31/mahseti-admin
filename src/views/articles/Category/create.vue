@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4">
+  <div class="p-4"  v-if="checkPermission(['articlecategory_store'])" >
     <b-card title="ایجاد دسته‌بندی مقاله">
       <b-form class="row" @submit.prevent="submitForm">
         <!-- Title -->
@@ -58,7 +58,9 @@ import 'vue3-toastify/dist/index.css'
 import Treeselect from 'vue3-treeselect'
 import 'vue3-treeselect/dist/vue3-treeselect.css'
 import { BForm, BFormGroup, BFormInput, BFormSelect, BFormTextarea, BButton, BCard, BFormInvalidFeedback } from 'bootstrap-vue-3'
-
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const form = reactive({
   title: '',
   slug: '',

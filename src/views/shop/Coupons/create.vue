@@ -1,5 +1,5 @@
 <template>
-  <div class="container py-4">
+  <div class="container py-4" v-if="checkPermission(['coupon_store'])">
     <b-card>
       <h5 class="mb-3">ایجاد کوپن</h5>
       <b-form @submit.prevent="handleSubmit">
@@ -106,6 +106,9 @@ import axios from 'axios'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 import { BForm, BFormGroup, BFormInput, BFormSelect, BFormCheckbox, BButton, BCard, BRow, BCol } from 'bootstrap-vue-3'
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 let loading = ref(false);
 
 const form = reactive({

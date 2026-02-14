@@ -1,5 +1,5 @@
 <template>
-    <div class="p-4">
+    <div class="p-4" v-if="checkPermission(['article_store'])">
         <b-card title="ایجاد مقاله جدید">
             <b-form @submit.prevent="submitForm">
                 <b-row>
@@ -26,7 +26,7 @@
                                 :normalizer="normalizer" :options="parentOptions" placeholder="انتخاب دسته‌بندی "
                                 :clearable="true" :valueConsistsOf="'ALL'" />
                             <b-form-invalid-feedback v-if="errors.category_ids">{{ errors.category_ids[0]
-                                }}</b-form-invalid-feedback>
+                            }}</b-form-invalid-feedback>
                         </b-form-group>
                     </b-col>
 
@@ -37,7 +37,7 @@
                             <b-form-input type="number" v-model="form.read_time" :state="!errors.read_time"
                                 placeholder="مثال: 5" />
                             <b-form-invalid-feedback v-if="errors.read_time">{{ errors.read_time[0]
-                            }}</b-form-invalid-feedback>
+                                }}</b-form-invalid-feedback>
                         </b-form-group>
                     </b-col>
 
@@ -55,7 +55,7 @@
                             <b-form-textarea v-model="form.short_description" :state="!errors.short_description"
                                 rows="2" />
                             <b-form-invalid-feedback v-if="errors.short_description">{{ errors.short_description[0]
-                            }}</b-form-invalid-feedback>
+                                }}</b-form-invalid-feedback>
                         </b-form-group>
                     </b-col>
 
@@ -64,7 +64,7 @@
                         <b-form-group label="توضیحات کامل">
                             <Editor v-model="form.description" />
                             <b-form-invalid-feedback v-if="errors.description">{{ errors.description[0]
-                            }}</b-form-invalid-feedback>
+                                }}</b-form-invalid-feedback>
                         </b-form-group>
                     </b-col>
 
@@ -73,7 +73,7 @@
                         <b-form-group label="Meta Title">
                             <b-form-input v-model="form.meta_title" :state="!errors.meta_title" />
                             <b-form-invalid-feedback v-if="errors.meta_title">{{ errors.meta_title[0]
-                            }}</b-form-invalid-feedback>
+                                }}</b-form-invalid-feedback>
                         </b-form-group>
                     </b-col>
 
@@ -82,7 +82,7 @@
                         <b-form-group label="Meta Description">
                             <b-form-input v-model="form.meta_description" :state="!errors.meta_description" />
                             <b-form-invalid-feedback v-if="errors.meta_description">{{ errors.meta_description[0]
-                            }}</b-form-invalid-feedback>
+                                }}</b-form-invalid-feedback>
                         </b-form-group>
                     </b-col>
 
@@ -106,6 +106,9 @@ import Treeselect from 'vue3-treeselect'
 import 'vue3-treeselect/dist/vue3-treeselect.css'
 import Editor from '@/components/shared/editor.vue';
 import { displayError } from '@/composable/useError'
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 let loading = ref(false);
 const form = reactive({
     title: '',

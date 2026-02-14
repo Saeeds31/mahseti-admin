@@ -1,5 +1,5 @@
 <template>
-    <div class="container mt-4">
+    <div class="container mt-4" v-if="checkPermission(['articlecategory_view'])">
         <div class="d-flex justify-content-between mb-3">
             <h3>لیست دسته بندی ها</h3>
             <router-link to="/articles/categories/create" class="btn btn-primary">
@@ -34,6 +34,9 @@ import Swal from 'sweetalert2'
 import { useRoute, useRouter } from 'vue-router'
 let router = useRouter();
 let route = useRoute();
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const categories = ref({
     data: [],
     total: 0,

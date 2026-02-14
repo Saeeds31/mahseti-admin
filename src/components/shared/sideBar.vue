@@ -234,7 +234,7 @@ const menuItems = ref(
 
     {
       name: "دیدگاه‌ها",
-      permissions: ['comment_product', 'comment_blogs'],
+      permissions: ['comment_products', 'comment_blogs'],
       icon: "bi-chat-dots",
       children: [
         {

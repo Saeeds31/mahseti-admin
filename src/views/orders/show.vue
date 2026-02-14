@@ -1,5 +1,5 @@
 <template>
-    <b-container fluid class="py-4">
+    <b-container fluid class="py-4" v-if="checkPermission(['order_view'])">
         <b-row>
             <!-- ستون جزئیات سفارش -->
             <b-col cols="12" lg="4">
@@ -96,6 +96,9 @@ import { toast } from "vue3-toastify"
 import "vue3-toastify/dist/index.css"
 import { useRoute } from "vue-router"
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const route = useRoute();
 const order = ref({ items: [] })
 

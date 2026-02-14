@@ -1,5 +1,5 @@
 <template>
-    <b-container fluid class="py-4">
+    <b-container fluid class="py-4" v-if="checkPermission(['report_users'])"> 
         <!-- عنوان و لودر -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2>گزارش کاربران</h2>
@@ -82,6 +82,9 @@
 import { ref, reactive, onMounted } from "vue";
 import axios from "axios";
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const users = ref({ data: [] });
 const loading = ref(false);
 const page = ref(1);

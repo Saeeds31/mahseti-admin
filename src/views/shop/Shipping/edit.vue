@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-4">
+  <div class="container mt-4" v-if="checkPermission(['shipping_update'])">
     <h3>ویرایش روش حمل و نقل</h3>
     <form @submit.prevent="updateForm" class="row g-3">
       <!-- Name -->
@@ -49,6 +49,9 @@ import { BFormTextarea, BFormInput, BFormCheckbox } from "bootstrap-vue-3"
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const route = useRoute()
 const router = useRouter()
 const form = ref({

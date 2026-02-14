@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-4">
+  <div class="container mt-4" v-if="checkPermission(['slider_update'])">
     <h3>ویرایش اسلایدر</h3>
     <form @submit.prevent="updateForm" class="row g-3">
       <!-- عنوان -->
@@ -62,6 +62,9 @@ import axios from 'axios'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 import Editor from '@/components/shared/editor.vue'
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const route = useRoute()
 const router = useRouter()
 const form = ref({

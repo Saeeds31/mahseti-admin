@@ -1,6 +1,8 @@
 
 <template>
-  <div class="login-page d-flex justify-content-center align-items-center vh-100">
+  <div class="login-page d-flex justify-content-center align-items-center vh-100"
+  v-if="checkPermission(['article_store'])" 
+  >
     <b-card class="login-card p-4 shadow-lg">
       <h2 class="text-center mb-4 text-primary">خوش آمدید</h2>
 

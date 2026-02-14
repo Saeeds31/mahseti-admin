@@ -1,5 +1,5 @@
 <template>
-    <div class="users-page container mt-4">
+    <div class="users-page container mt-4" v-if="checkPermission(['user_view'])">
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4>مدیریت کاربران</h4>
@@ -73,6 +73,9 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useRoute, useRouter } from "vue-router";
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const router = useRouter();
 const route = useRoute();
 const users = ref({ data: [] });

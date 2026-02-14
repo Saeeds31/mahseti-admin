@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-4">
+  <div class="container mt-4" v-if="checkPermission(['slider_store'])">
     <h3>ایجاد اسلایدر جدید</h3>
     <form @submit.prevent="submitForm" class="row g-3">
       <!-- عنوان -->
@@ -58,6 +58,9 @@ import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 import Editor from '@/components/shared/editor.vue'
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const form = ref({
   title: '',
   link: '',

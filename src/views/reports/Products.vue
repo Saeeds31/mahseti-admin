@@ -1,5 +1,5 @@
 <template>
-    <div class="container py-4">
+    <div class="container py-4" v-if="checkPermission(['report_products'])">
         <!-- فیلترها -->
         <div class="card mb-4">
             <div class="card-body">
@@ -111,8 +111,8 @@
 
                     <!-- صفحه‌بندی -->
                     <b-pagination v-model="currentPage" :total-rows="tableData.total" v-if="tableData.last_page != 1"
-                    :per-page="tableData.per_page" @Update:modelValue="changePage" align="center"
-                    class="mt-3"></b-pagination>
+                        :per-page="tableData.per_page" @Update:modelValue="changePage" align="center"
+                        class="mt-3"></b-pagination>
 
                 </div>
             </div>
@@ -124,6 +124,9 @@
 import axios from "axios";
 import { ref, onMounted } from "vue";
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const filters = ref({
     category_id: "",
     status: "",

@@ -1,5 +1,5 @@
 <template>
-    <div class="container mt-4">
+    <div class="container mt-4" v-if="checkPermission(['user_update'])">
         <h3>ویرایش کاربر</h3>
         <form @submit.prevent="updateForm" class="row g-3">
             <!-- نام کامل -->
@@ -56,6 +56,9 @@ import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 import moment from 'moment-jalaali';
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const route = useRoute()
 const router = useRouter()
 const errors = reactive({})

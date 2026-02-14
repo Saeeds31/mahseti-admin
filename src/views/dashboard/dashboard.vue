@@ -1,5 +1,5 @@
 <template>
-    <b-container fluid class="py-4">
+    <b-container fluid class="py-4" v-if="checkPermission(['dashboard_view'])">
         <b-row>
             <!-- سفارش‌ها -->
             <b-col cols="12" md="6" lg="6" class="mb-4">
@@ -95,6 +95,9 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 import ApexChart from "vue3-apexcharts";
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const dashboard = ref({
     orders: {},
     products: {},

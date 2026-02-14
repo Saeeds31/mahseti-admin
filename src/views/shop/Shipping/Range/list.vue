@@ -1,5 +1,5 @@
 <template>
-  <div class="container shipping-rates">
+  <div class="container shipping-rates" v-if="checkPermission(['shipping_list'])">
 
     <!-- فیلتر -->
     <div class="card mb-3">
@@ -84,6 +84,9 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { useRoute } from "vue-router";
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const shippingRates = ref([]);
 const shippingMethods = ref([]);
 const provinces = ref([]);

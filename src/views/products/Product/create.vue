@@ -1,5 +1,5 @@
 <template>
-  <div class="product-create container py-4">
+  <div class="product-create container py-4" v-if="checkPermission(['menu_update'])">
     <!-- دکمه‌های مرحله‌ای -->
     <div class="step-buttons d-flex flex-wrap align-items-center mb-4">
       <template v-for="(step, index) in steps" :key="index">
@@ -215,6 +215,9 @@ import Editor from '@/components/shared/Editor.vue'
 import axios from 'axios'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const currentStep = ref(0)
 const product = ref(null)
 const steps = ref([

@@ -1,5 +1,5 @@
 <template>
-  <div class="container py-4">
+  <div class="container py-4" v-if="checkPermission(['role_store'])">
     <b-card>
       <h5 class="mb-3">ایجاد نقش</h5>
       <b-form @submit.prevent="handleSubmit">
@@ -37,6 +37,9 @@ import { BForm, BFormGroup, BFormInput, BButton, BCard, BRow, BCol } from "boots
 import { toast } from "vue3-toastify"
 import "vue3-toastify/dist/index.css"
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const form = reactive({
   name: "",
   slug: "",

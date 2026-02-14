@@ -1,5 +1,5 @@
 <template>
-    <div class="container addresses-page">
+    <div class="container addresses-page" v-if="checkPermission(['address_view'])">
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center m-3">
             <h4>مدیریت آدرس‌ها</h4>
@@ -44,6 +44,9 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useRoute } from "vue-router";
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const route = useRoute();
 const addresses = ref([]);
 const loading = ref(false);

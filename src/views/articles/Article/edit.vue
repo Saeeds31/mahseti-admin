@@ -1,5 +1,5 @@
 <template>
-  <div class="container py-4">
+  <div v-if="checkPermission(['article_update'])" class="container py-4">
     <b-card>
       <h5 class="mb-3">ویرایش مقاله</h5>
       <b-form @submit.prevent="handleSubmit">
@@ -83,7 +83,8 @@
         </b-row>
 
         <div class="mt-3">
-          <b-button type="submit" :disabled="loading" variant="primary">ویرایش مقاله</b-button>
+          <b-button type="submit" :disabled="loading" variant="primary">ویرایش
+            مقاله</b-button>
         </div>
       </b-form>
     </b-card>
@@ -100,7 +101,9 @@ import Treeselect from 'vue3-treeselect'
 import 'vue3-treeselect/dist/vue3-treeselect.css'
 import Editor from '@/components/shared/editor.vue';
 import { useRoute } from 'vue-router'
-
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 let loading = ref(false);
 const route = useRoute();
 const oldImage = ref([]);

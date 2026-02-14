@@ -1,5 +1,5 @@
 <template>
-    <div class="wallets-page">
+    <div class="wallets-page" v-if="checkPermission(['wallet_view'])">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4>مدیریت کیف پول‌ها</h4>
         </div>
@@ -94,6 +94,9 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { Modal } from "bootstrap";
 import { useRoute, useRouter } from "vue-router";
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 let router = useRouter();
 let route = useRoute();
 const wallets = ref({ data: [] });

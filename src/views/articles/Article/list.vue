@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-4">
+  <div class="container mt-4"  v-if="checkPermission(['article_view'])" >
 
     <!-- فیلتر -->
     <div class="card mb-3">
@@ -76,6 +76,9 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const currentPage = ref(1)
 const articles = ref({ data: [], meta: null });
 const loading = ref(false);

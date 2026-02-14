@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-4">
+  <div class="container mt-4" v-if="checkPermission(['menu_view'])">
     <!-- دکمه افزودن -->
     <div class="mb-3 text-end">
       <router-link to="/content/menus/create" class="btn btn-success">
@@ -60,6 +60,9 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 
+import { useAdmin } from '@/stores/modules/admin';
+const store = useAdmin();
+const checkPermission = store.checkPermission;
 const menus = ref([]);
 const flattenedMenus = ref([]);
 const loading = ref(false);
