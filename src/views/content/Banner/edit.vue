@@ -99,9 +99,8 @@ const form = reactive({
 })
 let loading = ref(false);
 let positions = [
-  { id: 'after_discount', label: "بعد از تخفیف ها" },
-  { id: 'after_new_product', label: "بعد از جدیدترین ها" },
-  { id: 'before_blog', label: "قبل از بلاگ" },
+  { id: 'after_products', label: "بعد از محصولات" },
+  { id: 'before_about', label: "قبل از درباره ماه ستی" },
 ];
 let oldImage = ref([])
 let oldImage1 = ref([])

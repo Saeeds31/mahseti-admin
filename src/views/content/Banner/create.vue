@@ -80,7 +80,7 @@
 </template>
 
 <script setup>
-import { reactive } from "vue"
+import { reactive,ref } from "vue"
 import axios from "axios"
 import { toast } from "vue3-toastify"
 import "vue3-toastify/dist/index.css"
@@ -96,14 +96,13 @@ const form = reactive({
   image_desktop: "",
   image_mobile: "",
   link: "",
-  position: "after_discount",
+  position: "after_products",
   status: false,
   ratio: 100
 })
 let positions = [
-  { id: 'after_discount', label: "بعد از تخفیف ها" },
-  { id: 'after_new_product', label: "بعد از جدیدترین ها" },
-  { id: 'before_blog', label: "قبل از بلاگ" },
+  { id: 'after_products', label: "بعد از محصولات" },
+  { id: 'before_about', label: "قبل از درباره ماه ستی" },
 ];
 let loading = ref(false);
 function imageLoaded(files) {

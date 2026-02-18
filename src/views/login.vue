@@ -1,8 +1,5 @@
-
 <template>
-  <div class="login-page d-flex justify-content-center align-items-center vh-100"
-  v-if="checkPermission(['article_store'])" 
-  >
+  <div class="login-page d-flex justify-content-center align-items-center vh-100">
     <b-card class="login-card p-4 shadow-lg">
       <h2 class="text-center mb-4 text-primary">خوش آمدید</h2>
 
@@ -20,8 +17,8 @@
         </b-form-group>
 
         <b-form-group label="کد یکبار مصرف:" label-for="password">
-          <v-otp-input ref="otpInput" input-classes="otp-input" inputmode="tel" separator="-" inputType="letter-numeric" :num-inputs="6"
-            v-model:value="otp" />
+          <v-otp-input ref="otpInput" input-classes="otp-input" inputmode="tel" separator="-" inputType="letter-numeric"
+            :num-inputs="6" v-model:value="otp" />
         </b-form-group>
 
         <!-- Submit -->
