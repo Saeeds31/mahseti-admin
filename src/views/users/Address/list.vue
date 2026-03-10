@@ -1,11 +1,19 @@
 <template>
     <div class="container addresses-page" v-if="checkPermission(['address_view'])">
         <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center m-3">
-            <h4>مدیریت آدرس‌ها</h4>
-            <router-link :to="`/users/${route.params.id}/addresses/create`" class="btn btn-primary">
-                افزودن آدرس
-            </router-link>
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3>
+                    <i class="bi bi-house-add"></i>
+                    <span>مدیریت آدرس‌ها</span>
+                </h3>
+                <router-link :to="`/users/${route.params.id}/addresses/create`" class="btn btn-primary">
+                    <i class="bi bi-plus"></i>
+                    <span>
+                        افزودن آدرس
+                    </span>
+                </router-link>
+            </div>
         </div>
 
 
@@ -16,8 +24,9 @@
                 <p class="mt-2">در حال بارگذاری...</p>
             </div>
 
-            <div v-else v-for="address in addresses" :key="address.id" class="col-md-4">
-                <div class="card h-100">
+            <div v-else-if="addresses && addresses.length" v-for="address in addresses" :key="address.id"
+                class="col-md-4">
+                <div class="card address h-100">
                     <div class="card-body">
                         <h5 class="card-title">{{ address.receiver_name }}</h5>
                         <p class="card-text">
@@ -31,11 +40,16 @@
                     <div class="card-footer text-end">
                         <router-link :to="`/users/${route.params.id}/addresses/${address.id}/edit`"
                             class="btn btn-sm btn-info">
-                            ویرایش
+                          <i class="bi bi-pen"></i>
+                          <span>  ویرایش</span>
                         </router-link>
                     </div>
                 </div>
             </div>
+            <p class="bg-warning-subtle p-4 text-center " v-else>
+                <i class="bi bi-database-fill-exclamation"></i>
+                <span>هیچ داده ای برای نمایش وجود ندارد</span>
+            </p>
         </div>
     </div>
 </template>
@@ -67,11 +81,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.card {
+.address {
     transition: transform 0.2s;
 }
 
-.card:hover {
+.address:hover {
     transform: translateY(-5px);
 }
 </style>

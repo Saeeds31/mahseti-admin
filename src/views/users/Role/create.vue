@@ -1,29 +1,35 @@
 <template>
-  <div class="container py-4" v-if="checkPermission(['role_store'])">
+  <div class="container py-4 mt-3  bg-gray" v-if="checkPermission(['role_store'])">
+    <h3 class=" p-2">
+      <i class="bi bi-person-rolodex"></i>
+      <span>ایجاد نقش</span>
+    </h3>
     <b-card>
-      <h5 class="mb-3">ایجاد نقش</h5>
       <b-form @submit.prevent="handleSubmit">
         <b-row>
           <!-- Name -->
           <b-col cols="12" md="6">
             <b-form-group label="نام نقش" label-for="name">
-              <b-form-input id="name" v-model="form.name" :state="errors.name ? false : null"
-                placeholder="نام نقش را وارد کنید" />
+              <b-form-input id="name" v-model="form.name" placeholder="نام نقش را وارد کنید" />
               <small v-if="errors.name" class="text-danger">{{ errors.name[0] }}</small>
             </b-form-group>
           </b-col>
 
           <b-col cols="12" md="6">
             <b-form-group label="به انگلیسی" label-for="slug">
-              <b-form-input id="slug" v-model="form.slug" :state="errors.slug ? false : null"
-                placeholder="ترجمه انگلیسی نقش" />
+              <b-form-input id="slug" v-model="form.slug" placeholder="ترجمه انگلیسی نقش" />
               <small v-if="errors.slug" class="text-danger">{{ errors.slug[0] }}</small>
             </b-form-group>
           </b-col>
         </b-row>
 
         <div class="mt-3">
-          <b-button type="submit" :disabled="loading" variant="primary">ثبت</b-button>
+          <b-button type="submit" :disabled="loading" variant="primary">
+            <i class="bi bi-save2"></i>
+            <span>
+              ذخیره
+
+            </span> </b-button>
         </div>
       </b-form>
     </b-card>

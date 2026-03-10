@@ -6,6 +6,7 @@ import "bootstrap"; // optional: for JS components like dropdowns, modals
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "bootstrap/dist/css/bootstrap.rtl.min.css";
+import Multiselect from "vue-multiselect";
 import "vue3-treeselect/dist/vue3-treeselect.css";
 import BootstrapVue3 from "bootstrap-vue-3";
 import router from "./router";
@@ -18,8 +19,8 @@ import Vue3PersianDatetimePicker from "vue3-persian-datetime-picker";
 import "@boindil/vue-file-agent-next/dist/vue-file-agent-next.css";
 // api.mahseti.shop
 // 127.0.0.1:8000
-axios.defaults.baseURL = "https://api.mahseti.shop/api/v1/admin";
-window.baseImageAddress = "https://api.mahseti.shop/storage_public/";
+axios.defaults.baseURL = "http://127.0.0.1:8000/api/v1/admin";
+window.baseImageAddress = "http://127.0.0.1:8000/storage_public/";
 const app = createApp(App);
 // app.use(CKEditor)
 app.use(Vue3Toastify, {
@@ -31,4 +32,6 @@ app.use(VueFileAgent);
 app.use(pinia);
 app.use(router);
 app.component("DatePicker", Vue3PersianDatetimePicker);
+app.component("multiselect", Multiselect);
+
 app.mount("#app");

@@ -2,16 +2,28 @@
     <div class="container mt-4" v-if="checkPermission(['order_store'])">
         <div class="row">
             <!-- ستون اصلی -->
-            <div class="col-md-8">
-                <h3>ثبت سفارش جدید</h3>
+            <div class="col-md-8 bg-gray">
+                <h3 class=" p-2">
+                    <i class="bi bi-plus"></i>
+                    <span>
+                        ثبت سفارش جدید
+                    </span>
+                </h3>
                 <form @submit.prevent="submitOrder" class="row g-3">
-
                     <!-- انتخاب کاربر -->
                     <div class="col-md-12">
                         <label class="form-label">انتخاب کاربر</label>
-                        <Treeselect :options="userOptions" v-model="selectedUser" :valueFormat="'object'"
-                            :multiple="false" @search-change="loadUsers" placeholder="جستجوی کاربر..."
-                            :searchable="true" />
+                        <multiselect @search-change="loadUsers" v-model="selectedUser" placeholder="انتخاب کاربر"
+                            open-direction="bottom" :options="userOptions" label="label" track-by="id"
+                            :searchable="true" :multiple="false" :close-on-select="true" :show-labels="false">
+                            <template slot="noOptions">
+                                جستجو کنید
+                            </template>
+                            <template slot="noResult">
+                                <span v-if="isRequesting" v-text="'در حال جستجو...'" />
+                                <span v-else v-text="'موردی یافت نشد'"></span>
+                            </template>
+                        </multiselect>
                     </div>
                     <!-- انتخاب آدرس -->
                     <div class="col-12" v-if="addresses.length">
@@ -24,9 +36,18 @@
                     <div class="col-12">
                         <label class="form-label">افزودن محصول</label>
                         <div class="gap-2 align-items-center selectProduct">
-                            <Treeselect :normalizer="productsNormalizer" :valueFormat="'object'"
-                                v-model="selectedProduct" :options="productOptions" :multiple="false"
-                                @search-change="loadProducts" placeholder="انتخاب محصول..." class="" />
+                            <multiselect @search-change="loadProducts" v-model="selectedProduct"
+                                placeholder="انتخاب محصول" open-direction="bottom" :options="productOptions"
+                                label="title" track-by="id" :searchable="true" :multiple="false" :close-on-select="true"
+                                :show-labels="false">
+                                <template slot="noOptions">
+                                    جستجو کنید
+                                </template>
+                                <template slot="noResult">
+                                    <span v-if="isRequesting" v-text="'در حال جستجو...'" />
+                                    <span v-else v-text="'موردی یافت نشد'"></span>
+                                </template>
+                            </multiselect>
                             <input v-model.number="selectedQuantity" type="number" min="1" class="form-control "
                                 placeholder="تعداد" />
                             <button type="button" class="btn btn-success " @click="addProduct">افزودن</button>
@@ -52,16 +73,23 @@
                     <!-- روش حمل و نقل -->
                     <div v-if="form.items.length" class="col-12">
                         <label class="form-label">روش حمل و نقل</label>
-                        <Treeselect :normalizer="shippingNormalizer" v-model="form.shipping_method" :multiple="false"
-                            :options="shippings" placeholder="انتخاب روش حمل..." />
+                        <Treeselect :normalizer="shippingNormalizer" v-if="shippings.length" :valueFormat="'object'"
+                            v-model="form.shipping_method" :multiple="false" :options="shippings"
+                            placeholder="انتخاب روش حمل..." />
                     </div>
                 </form>
             </div>
 
             <!-- ستون جمع سفارش -->
-            <div class="col-md-4">
+            <div class="col-md-4 ">
                 <div class="card">
-                    <div class="card-header">جمع سفارش</div>
+                    <div class="card-header">
+                        <h3>
+                            <span>
+                                جمع سفارش
+                            </span>
+                        </h3>
+                    </div>
                     <div class="card-body">
 
                         <p v-if="wallet">موجودی کیف پول: <strong>{{ wallet.balance.toLocaleString() }} تومان</strong>
@@ -100,6 +128,17 @@ const form = ref({
     shipping_method: null,
     items: []
 })
+let sumQuantity = computed(() => {
+    return form.value.items.reduce((accumulator, item) => {
+        return accumulator + item.quantity
+    }, 0);
+})
+let subTotal = computed(() => {
+    return form.value.items.reduce((accumulator, item) => {
+        return accumulator + (item.price * item.quantity)
+    }, 0);
+})
+
 let discount_amount = ref(0);
 let selectedAddress = ref(null);
 const addresses = ref([])
@@ -122,94 +161,96 @@ watch(() => selectedUser.value, (newUser) => {
     }
 })
 watch(() => selectedAddress.value, (newAddress) => {
-    console.log(newAddress);
-
     if (newAddress) {
-        showAvalibleShipping(newAddress)
+        showAvalibleShipping()
     } else {
         shippings.value = [];
     }
 })
-let shippingOptionBackup = ref([]);
 // محصولات انتخاب شده → محاسبه جمع
 const subtotal = computed(() =>
     form.value.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 )
 
 const total = computed(() => subtotal.value + shippingCost.value - discount_amount.value)
-
+let abortController = null;
 // لود کاربران
 const loadUsers = async (search) => {
-    try {
-        const { data } = await axios.get('/users', { params: { search } })
-        userOptions.value = data.data.map(u => ({ id: u.id, label: u.full_name, addresses: u.addresses, wallet: u.wallet }));
-    } catch {
-        toast.error('خطا در بارگذاری کاربران')
+    if (abortController) {
+        abortController.abort();
     }
-}
-async function showAvalibleShipping(userAddress) {
 
-    const { data } = await axios.get(`shippings/avalible-shipping/${userAddress}`);
+    abortController = new AbortController();
+
+    const { data } = await axios.get('/users', {
+        params: { search },
+        signal: abortController.signal,
+
+    })
+    userOptions.value = data.data.map(u => ({ id: u.id, label: u.full_name, addresses: u.addresses, wallet: u.wallet }));
+}
+async function showAvalibleShipping() {
+    shippings.value = [];
+    form.value.shipping_method = null;
+    const { data } = await axios.get(`shippings/avalible-shipping`, {
+        params: {
+            addressId: selectedAddress.value,
+            subTotal: subTotal.value,
+            quantity: sumQuantity.value,
+        }
+    });
     shippings.value = data.data
 }
 // گرفتن آدرس‌های کاربر انتخاب شده
 const fetchAddresses = async (asses) => {
     addresses.value = asses.map(a => ({ id: a.id, label: `${a.receiver_name} - ${a.address_line} - ${a.phone} ` }))
 }
-const productsNormalizer = (node) => {
-    return {
-        id: node.id,
-        label: node.title,
-        children: node.children
-    }
-}
+
 const shippingNormalizer = (node) => {
     return {
         id: node.method_id,
         label: node.shipping_method,
     }
 }
-// لود محصولات
+let abortController1 = null;
+
 const loadProducts = async (search) => {
     if (!search && search.length < 2) return;
-    try {
-        const { data } = await axios.get('/products', { params: { search } })
-        productOptions.value = await convertToSelectableProduct(data.data);
-    } catch (e) {
-        console.log(e);
-
-        toast.error('خطا در بارگذاری محصولات')
+    if (abortController1) {
+        abortController1.abort();
     }
+    abortController1 = new AbortController();
+    const { data } = await axios.get('/products', {
+        params: { search },
+        signal: abortController1.signal,
+    })
+    productOptions.value = await convertToSelectableProduct(data.data);
 }
 
 async function convertToSelectableProduct(productList) {
     let finalList = [];
     productList.forEach(product => {
-        let obj = {};
         // اگر بیشتر از یک تنوع پایه داشته باشه
         if (product.variants.length > 1) {
-            let childs = product.variants.map((variant) => {
-                return {
+            product.variants.forEach((variant) => {
+                let obj = {
                     id: variant.id,
                     product_id: product.id,
                     price: variant.price,
-                    title: `${variant.id} - ${product.title} [${variant.values.map((att) => { return att.value }).join("-")}] موجودی:${variant.stock}`,
+                    title: `${variant.id} - ${product.title} || ${variant.values.map((att) => { return att.value }).join("-")} || موجودی :${variant.stock}`,
                     isDisabled: variant.stock > 0 ? false : true
                 }
+                finalList.push(obj);
             });
-            obj.id = `null_${product.id}`;
-            obj.product_id = product.product_id;
-            obj.title = product.title + " :";
-            obj.price = product.price;
-            obj.children = childs;
         } else {
+            let obj = {};
             obj.isDisabled = product.variants[0].stock > 0 ? false : true;
             obj.id = product.variants[0].id;
             obj.title = product.variants[0].id + " - " + product.title;
             obj.price = product.price;
             obj.product_id = product.id;
+            finalList.push(obj);
         }
-        finalList.push(obj);
     });
 
     return finalList;
@@ -232,54 +273,21 @@ const addProduct = () => {
             quantity: selectedQuantity.value
         })
     }
-    selectedQuantity.value = 1
+    selectedQuantity.value = 1;
+    showAvalibleShipping()
 }
 
 // حذف محصول
 const removeProduct = (index) => {
     form.value.items.splice(index, 1)
 }
-
-// لود روش حمل و نقل
-const loadShippings = async () => {
-    try {
-        const { data } = await axios.get('/shipping-methods')
-        shippingOptionBackup.value = data.data;
-    } catch (e) {
-        console.log(e);
-        toast.error('خطا در بارگذاری روش‌های حمل')
-    }
-}
-loadShippings();
-watch(() => total.value, (newItems) => {
-    if (selectedAddress.value && form.value.shipping_method) {
-        calculateShipping(selectedAddress.value, form.value.shipping_method)
-    }
-});
-watch(() => form.value.items, (list) => {
-    if (!list.length) {
-        form.value.shipping_method = null;
-    }
-    if (selectedAddress.value && form.value.shipping_method) {
-        calculateShipping(selectedAddress.value, form.value.shipping_method)
-    }
-}, { deep: true })
 // وقتی روش حمل انتخاب شد → هزینه اضافه شود
 watch(() => form.value.shipping_method, async (val) => {
     if (!val || !selectedAddress.value) {
         return
     }
-    calculateShipping(selectedAddress.value, val)
+    shippingCost.value = val.cost
 })
-async function calculateShipping(address, shipping) {
-    let fd = new FormData();
-    fd.append("address_id", address);
-    fd.append("order_total", total.value);
-    fd.append("shipping_method_id", shipping);
-    const { data } = await axios.post("shippings/calculate-shipping-cost", fd)
-    shippingCost.value = data.cost
-
-}
 // ثبت سفارش
 const submitOrder = async () => {
     if (!selectedUser.value || !selectedAddress.value || !form.value.items.length || !form.value.shipping_method) {
@@ -302,7 +310,7 @@ const submitOrder = async () => {
         let formData = new FormData();
         formData.append("user_id", selectedUser.value.id)
         formData.append("address_id", selectedAddress.value)
-        formData.append("shipping_method_id", form.value.shipping_method)
+        formData.append("shipping_method_id", form.value.shipping_method?.method_id)
         formData.append("subtotal", subtotal.value)
         formData.append("discount_amount", discount_amount.value)
         formData.append("shipping_cost", shippingCost.value)
@@ -315,7 +323,6 @@ const submitOrder = async () => {
         })
         await axios.post('/orders-create-by-admin', formData)
         toast.success('سفارش با موفقیت ثبت شد')
-        // ریست فرم
         form.value = { user_id: null, address_id: null, shipping_method: null, items: [] }
         addresses.value = []
         shippingCost.value = 0;

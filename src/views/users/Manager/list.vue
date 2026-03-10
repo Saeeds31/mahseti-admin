@@ -1,15 +1,20 @@
 <template>
-    <div class="users-page container mt-4" v-if="checkPermission(['manager_view'])">
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4>مدیریت مدیران</h4>
-            <router-link to="/users/managers/create" class="btn btn-primary">
-                افزودن مدیر
-            </router-link>
-        </div>
-
-        <!-- Filter -->
+    <div class="users-page container mt-4 " v-if="checkPermission(['manager_view'])">
         <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center mb-3">
+                <h3>
+                    <i class="bi bi-person-workspace"></i>
+                    <span>
+                        مدیریت مدیران
+                    </span>
+                </h3>
+                <router-link to="/users/managers/create" class="btn btn-primary">
+                    <i class="bi bi-plus"></i>
+                    <span>
+                        افزودن مدیر
+                    </span>
+                </router-link>
+            </div>
             <div class="card-body">
                 <input v-model="filters.search" @input="getManagers" type="text" class="form-control"
                     placeholder="جستجو بر اساس نام یا موبایل" />
@@ -41,10 +46,12 @@
                                 <td>{{ user.mobile }}</td>
                                 <td>
                                     <router-link :to="`/users/managers/${user.id}/edit`" class="btn btn-sm btn-info">
-                                        ویرایش
+                                        <i class="bi bi-pen"></i>
+                                        <span> ویرایش</span>
                                     </router-link>
                                     <button class="btn btn-sm btn-danger ms-2" @click="confirmDelete(user.id)">
-                                        حذف
+                                        <i class="bi bi-trash3-fill"></i>
+                                        <span>حذف</span>
                                     </button>
                                 </td>
                             </tr>
@@ -71,11 +78,24 @@ const route = useRoute();
 const users = ref({ data: [] });
 const loading = ref(false);
 const filters = ref({ search: "" });
+let abortController = null;
 
 const getManagers = async () => {
     loading.value = true;
+    // اگر درخواست قبلی وجود داشت، کنسل کن
+    if (abortController) {
+        abortController.abort();
+    }
+
+    abortController = new AbortController();
     try {
-        const response = await axios.get("/user-managers");
+        const response = await axios.get("/user-managers", {
+            params: {
+                search: filters.value.search,
+            },
+            signal: abortController.signal,
+
+        });
         users.value = response.data;
     } finally {
         loading.value = false;

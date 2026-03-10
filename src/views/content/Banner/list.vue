@@ -3,26 +3,22 @@
 
     <!-- باکس فیلتر -->
     <div class="card mb-3">
-      <div class="card-body">
-        <form @submit.prevent="getBanners">
-          <div class="row g-2">
-            <div class="col-md-4">
-              <input v-model="filters.title" type="text" class="form-control" placeholder="جستجو بر اساس عنوان" />
-            </div>
-            <div class="col-md-2">
-              <button class="btn btn-primary w-100" type="submit">جستجو</button>
-            </div>
-          </div>
-        </form>
+      <div class="card-header d-flex align-items-center justify-content-between mb-3 text-end">
+        <h3>
+          <i class="bi bi-images"></i>
+          <span> مدیریت بنرها</span>
+        </h3>
+        <router-link to="/content/banners/create" class="btn btn-success">
+          <i class="bi bi-plus"></i>
+          <span>
+            افزودن بنر
+          </span>
+        </router-link>
       </div>
     </div>
 
     <!-- دکمه افزودن -->
-    <div class="mb-3 text-end">
-      <router-link to="/content/banners/create" class="btn btn-success">
-        افزودن بنر
-      </router-link>
-    </div>
+
 
     <!-- جدول -->
     <div class="card">
@@ -56,10 +52,12 @@
                 </td>
                 <td>
                   <router-link :to="`/content/banners/${banner.id}/edit`" class="btn btn-sm btn-warning me-2">
-                    ویرایش
+                    <i class="bi bi-pen"></i>
+                    <span> ویرایش</span>
                   </router-link>
                   <button class="btn btn-sm btn-danger" @click="deleteBanner(banner.id)">
-                    حذف
+                    <i class="bi bi-trash3-fill"></i>
+                    <span>حذف</span>
                   </button>
                 </td>
               </tr>

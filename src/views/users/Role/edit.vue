@@ -1,7 +1,10 @@
 <template>
-  <div class="container py-4" v-if="checkPermission(['role_update'])">
+  <div class="container mt-3 py-4 bg-gray" v-if="checkPermission(['role_update'])">
+    <h3 class=" p-2">
+      <i class="bi bi-person-rolodex"></i>
+      <span>ویرایش نقش</span>
+    </h3>
     <b-card>
-      <h5 class="mb-3">ویرایش نقش</h5>
       <b-form @submit.prevent="handleSubmit">
         <b-row>
           <!-- Name -->
@@ -22,7 +25,13 @@
         </b-row>
 
         <div class="mt-3">
-          <b-button type="submit" :disabled="loading" variant="primary">ویرایش نقش</b-button>
+          <b-button type="submit" :disabled="loading" variant="primary">
+            <i class="bi bi-save2"></i>
+            <span class="mx-2">
+
+              ذخیره
+            </span>
+          </b-button>
         </div>
       </b-form>
     </b-card>
@@ -30,7 +39,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted } from 'vue'
+import { reactive, onMounted, ref } from 'vue'
 import axios from 'axios'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
@@ -53,6 +62,7 @@ onMounted(async () => {
   try {
     const res = await axios.get(`/roles/${route.params.id}`)
     form.name = res.data.data.name
+    form.slug = res.data.data.slug
   } catch (err) {
     console.log(err);
 

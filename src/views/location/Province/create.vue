@@ -1,27 +1,36 @@
 <template>
-  <div class="container py-4" v-if="checkPermission(['province_store'])">
-    <b-card>
-      <h5 class="mb-3">ایجاد استان</h5>
-      <b-form @submit.prevent="handleSubmit">
-        <b-row>
-          <b-col cols="12" md="6">
-            <b-form-group label="نام استان" label-for="name">
-              <b-form-input id="name" v-model="form.name" :state="errors.name ? false : null" />
-              <small v-if="errors.name" class="text-danger">{{ errors.name[0] }}</small>
-            </b-form-group>
-          </b-col>
-        </b-row>
+  <div class="container py-4 mt-4 bg-gray" v-if="checkPermission(['province_store'])">
 
-        <div class="mt-3">
-          <b-button type="submit" :disabled="loading" variant="success">ایجاد استان</b-button>
-        </div>
-      </b-form>
-    </b-card>
+    <h3 class=" p-2">
+      <i class="bi bi-map"></i>
+      <span>
+        ایجاد استان جدید
+      </span>
+    </h3>
+    <b-form @submit.prevent="handleSubmit">
+      <b-row>
+        <b-col cols="12" md="6">
+          <b-form-group label="نام استان" label-for="name">
+            <b-form-input id="name" v-model="form.name"  />
+            <small v-if="errors.name" class="text-danger">{{ errors.name[0] }}</small>
+          </b-form-group>
+        </b-col>
+      </b-row>
+
+      <div class="mt-3">
+        <b-button type="submit" :disabled="loading" variant="success">
+          <i class="bi bi-save2"></i>
+          <span class="mx-2">
+            ایجاد استان
+          </span>
+        </b-button>
+      </div>
+    </b-form>
   </div>
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import axios from 'axios'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'

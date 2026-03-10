@@ -1,22 +1,31 @@
 <template>
     <div class="container mt-4" v-if="checkPermission(['articlecategory_view'])">
-        <div class="d-flex justify-content-between mb-3">
-            <h3>لیست دسته بندی ها</h3>
-            <router-link to="/articles/categories/create" class="btn btn-primary">
-                افزودن دسته بندی
-            </router-link>
+        <div class="card mb-2">
+            <div class="card-header d-flex justify-content-between align-items-center mb-3">
+                <h3>
+                    <i class="bi bi-list-stars"></i>
+                    <span>مدیریت دسته بندی</span>
+                </h3>
+                <router-link to="/articles/categories/create" class="btn btn-primary">
+
+                    <i class="bi bi-plus"></i>
+                    <span> افزودن دسته بندی</span>
+                </router-link>
+            </div>
         </div>
 
-        <b-table striped hover :items="categories.data" :fields="fields">
+        <b-table class="table table-bordered table-striped" striped hover :items="categories.data" :fields="fields">
             <template #cell(parent)="data">
                 {{ data.item.parent ? data.item.parent.title : '-' }}
             </template>
 
             <template #cell(actions)="data">
                 <router-link :to="`/articles/categories/${data.item.id}/edit`" class="btn btn-sm btn-warning me-2">
-                    ویرایش </router-link>
+                    <i class="bi bi-pen"></i>
+                    <span> ویرایش</span> </router-link>
                 <button class="btn btn-sm btn-danger" @click="confirmDelete(data.item.id)">
-                    حذف
+                    <i class="bi bi-trash3-fill"></i>
+                    <span>حذف</span>
                 </button>
             </template>
         </b-table>
@@ -66,13 +75,14 @@ const fetchCategories = async (page = 1) => {
 
 const confirmDelete = (id) => {
     Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: 'آیا مطمئن هستید?',
+        text: "این عملیات بازگشت پذیر نیست!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, delete it!',
+        confirmButtonText: 'بله انجام شود!',
+        cancelButtonText: 'لغو',
     }).then((result) => {
         if (result.isConfirmed) {
             deleteCategory(id)
@@ -83,17 +93,15 @@ const confirmDelete = (id) => {
 const deleteCategory = async (id) => {
     try {
         await axios.delete(`/article-categories/${id}`)
-        Swal.fire('Deleted!', 'Category has been deleted.', 'success')
+        Swal.fire('پاک شد!', 'با موفقیت حذف شد.', 'success')
         fetchCategories(currentPage.value)
     } catch (error) {
         console.error(error)
-        Swal.fire('Error!', 'Failed to delete category.', 'error')
+        Swal.fire('Error!', error.response.data.message ?? 'خطایی در حذف رخ داد', 'error')
     }
 }
 
 onMounted(() => {
-    console.log(2);
-
     fetchCategories()
 })
 

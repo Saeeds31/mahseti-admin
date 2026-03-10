@@ -42,10 +42,12 @@
               <td>{{ spec.values.length }}</td>
               <td>
                 <router-link :to="`/products/specification/${spec.id}/edit`" class="btn btn-sm btn-info me-1">
-                  ویرایش
+                  <i class="bi bi-pen"></i>
+                  <span>  ویرایش</span>
                 </router-link>
                 <button class="btn btn-sm btn-danger" @click="confirmDelete(spec.id)">
-                  حذف
+                  <i class="bi bi-trash3-fill"></i>
+                  <span>حذف</span>
                 </button>
               </td>
             </tr>

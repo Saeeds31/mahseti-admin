@@ -281,23 +281,8 @@ const routes = [
   },
   //
 
-  {
-    path: "/shop/shipping/:method/range",
-    name: "shop-shipping-range",
-    component: () => import("@/views/shop/Shipping/Range/list.vue"),
-  },
 
-  {
-    path: "/shop/shipping/:method/range/create",
-    name: "shop-shipping-range-create",
-    component: () => import("@/views/shop/Shipping/Range/create.vue"),
-  },
-
-  {
-    path: "/shop/shipping/:method/range/:id/edit",
-    name: "shop-shipping-range-edit",
-    component: () => import("@/views/shop/Shipping/Range/edit.vue"),
-  },
+  
   {
     path: "/comments/products",
     name: "comments-products",

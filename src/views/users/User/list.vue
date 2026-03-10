@@ -1,20 +1,24 @@
 <template>
     <div class="users-page container mt-4" v-if="checkPermission(['user_view'])">
         <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4>مدیریت کاربران</h4>
-            <router-link to="/users/create" class="btn btn-primary">
-                افزودن کاربر
-            </router-link>
-        </div>
-
-        <!-- Filter -->
-        <div class="card mb-3">
+        <div class="card mb-2">
+            <div class="card-header d-flex justify-content-between align-items-center mb-3">
+                <h3>
+                    <i class="bi bi-people-fill"></i>
+                    <span>مدیریت کاربران</span>
+                </h3>
+                <router-link to="/users/create" class="btn btn-primary">
+                    <i class="bi bi-plus"></i>
+                    <span>افزودن</span>
+                </router-link>
+            </div>
             <div class="card-body">
                 <input v-model="filters.search" @input="getUsers" type="text" class="form-control"
                     placeholder="جستجو بر اساس نام یا موبایل" />
             </div>
         </div>
+
+     
 
         <!-- Table -->
         <div class="card">
@@ -45,13 +49,16 @@
                                 <td>{{ user.birth_date ?? '-' }}</td>
                                 <td>
                                     <router-link :to="`/users/${user.id}/addresses`" class="btn btn-sm btn-success">
-                                        آدرس ها
+                                        <i class="bi bi-house"></i>
+                                        <span>آدرس ها</span>
                                     </router-link>
                                     <router-link :to="`/users/${user.id}/edit`" class="btn btn-sm btn-info ms-2">
-                                        ویرایش
+                                        <i class="bi bi-pen"></i>
+                                        <span> ویرایش</span>
                                     </router-link>
                                     <button class="btn btn-sm btn-danger ms-2" @click="confirmDelete(user.id)">
-                                        حذف
+                                        <i class="bi bi-trash3-fill"></i>
+                                        <span>حذف</span>
                                     </button>
                                 </td>
                             </tr>
@@ -83,21 +90,41 @@ const loading = ref(false);
 const filters = ref({ search: "" });
 const currentPage = ref(1);
 
+let abortController = null;
+
 const getUsers = async (page = 1) => {
     loading.value = true;
+
+    // اگر درخواست قبلی وجود داشت، کنسل کن
+    if (abortController) {
+        abortController.abort();
+    }
+
+    abortController = new AbortController();
+
     try {
         const response = await axios.get("/users", {
             params: {
                 page,
                 search: filters.value.search,
             },
+            signal: abortController.signal,
         });
+
         users.value = response.data;
         currentPage.value = response.data.current_page;
+    } catch (error) {
+        if (axios.isCancel(error)) {
+            console.log('درخواست قبلی کنسل شد:', error.message);
+        } else {
+            console.error('خطا در دریافت کاربران:', error);
+        }
     } finally {
         loading.value = false;
     }
 };
+
+
 
 const changePage = (page) => {
     if (page) {

@@ -21,7 +21,8 @@
                     <b-form-input v-model="form.values[index]"
                       placeholder="مقدار ویژگی (مثال: آهنی، آلومینیومی، چوبی)" />
                     <b-button variant="danger" class="ms-2" @click="removeValue(index)">
-                      حذف
+                      <i class="bi bi-trash3-fill"></i>
+                      <span>حذف</span>
                     </b-button>
                   </div>
                   <b-button variant="success" @click="addValue">افزودن مقدار</b-button>

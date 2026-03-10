@@ -1,10 +1,18 @@
 <template>
   <div class="container mt-4">
-    <!-- دکمه افزودن -->
-    <div class="mb-3 text-end">
-      <router-link to="/products/categories/create" class="btn btn-success">
-        افزودن دسته‌بندی
-      </router-link>
+    <div class="card mb-2">
+      <div class="card-header d-flex justify-content-between align-items-center mb-3">
+        <h3>
+          <i class="bi bi-list-nested"></i>
+          <span>دسته بندی محصولات</span>
+        </h3>
+        <router-link to="/products/categories/create" class="btn btn-success">
+          <i class="bi bi-plus"></i>
+          <span>
+            افزودن دسته‌بندی
+          </span>
+        </router-link>
+      </div>
     </div>
 
     <!-- جدول -->
@@ -37,10 +45,12 @@
                 <td>{{ cat.show_products_in_home ? "بله" : "خیر" }}</td>
                 <td>
                   <router-link :to="`/products/categories/${cat.id}/edit`" class="btn btn-sm btn-warning me-2">
-                    ویرایش
+                    <i class="bi bi-pen"></i>
+                    <span> ویرایش</span>
                   </router-link>
                   <button class="btn btn-sm btn-danger" @click="deleteCategory(cat.id)">
-                    حذف
+                    <i class="bi bi-trash3-fill"></i>
+                    <span>حذف</span>
                   </button>
                 </td>
               </tr>

@@ -1,13 +1,27 @@
 <template>
-    <div class="container mt-4" v-if="checkPermission(['manager_store'])">
-        <h3>تخصیص نقش به کاربر</h3>
+    <div class="container mt-4 bg-gray" v-if="checkPermission(['manager_store'])">
+        <h3 class=" p-2">
+            <i class="bi bi-person-workspace"></i>
+            <span>
+                تخصیص نقش به کاربر </span>
+        </h3>
         <form @submit.prevent="submitForm" class="row g-3">
 
             <!-- انتخاب کاربر با سرچ لحظه‌ای -->
             <div class="col-md-12">
                 <label class="form-label">انتخاب کاربر</label>
-                <Treeselect :options="options" v-model="selectedUser" :multiple="false" @search-change="loadUsers"
-                    placeholder="جستجوی کاربر..." :searchable="true" />
+
+                <multiselect @search-change="loadUsers" v-model="selectedUser" placeholder="انتخاب کاربر"
+                    open-direction="bottom" :options="options" label="label" track-by="id" :searchable="true"
+                    :multiple="false" :close-on-select="true" :show-labels="false">
+                    <template slot="noOptions">
+                        جستجو کنید
+                    </template>
+                    <template slot="noResult">
+                        <span v-if="isRequesting" v-text="'در حال جستجو...'" />
+                        <span v-else v-text="'موردی یافت نشد'"></span>
+                    </template>
+                </multiselect>
             </div>
 
             <!-- انتخاب نقش‌ها -->
@@ -19,7 +33,11 @@
 
             <div class="col-12">
                 <button type="submit" class="btn btn-primary" :disabled="loading">
-                    {{ loading ? 'در حال ذخیره...' : 'ذخیره نقش‌ها' }}
+                    <i class="bi bi-save2"></i>
+                    <span class="mx-2">
+                        
+                        {{ loading ? 'در حال ذخیره...' : 'ذخیره نقش‌ها' }}
+                    </span>
                 </button>
             </div>
         </form>
@@ -27,7 +45,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
@@ -42,6 +60,7 @@ const selectedRoles = ref([])
 const roles = ref([]);
 const options = ref([]);
 const loading = ref(false)
+let abortController = null;
 
 // بارگذاری نقش‌ها فقط یک بار
 const fetchRoles = async () => {
@@ -57,14 +76,23 @@ const fetchRoles = async () => {
 
 // سرچ کاربران به صورت async
 const loadUsers = async (searchQuery) => {
-    console.log(searchQuery);
+    if (abortController) {
+        abortController.abort();
+    }
+    abortController = new AbortController();
     try {
-        const { data } = await axios.get('/users?search=' + searchQuery ?? '')
+        const { data } = await axios.get('/users?search=' + searchQuery ?? '', {
+            signal: abortController.signal,
+        })
         const ops = data.data.map(u => ({ id: u.id, label: `${u.full_name} (${u.mobile})` }))
-        options.value = ops
-    } catch (e) {
-        console.log(e);
-        toast.error('خطا در جستجوی کاربران')
+        options.value = ops;
+
+    } catch (error) {
+        if (axios.isCancel(error)) {
+            console.log('درخواست قبلی کنسل شد:', error.message);
+        } else {
+            toast.error('خطا در جستجوی کاربران')
+        }
     }
 }
 
@@ -73,10 +101,14 @@ const submitForm = async () => {
         toast.error('لطفاً یک کاربر انتخاب کنید')
         return
     }
+    if (!selectedRoles.value.length) {
+        toast.error('لطفاً یک نقش انتخاب کنید')
+        return
+    }
     try {
         loading.value = true
         const formData = new FormData()
-        formData.append('user_id', selectedUser.value)
+        formData.append('user_id', selectedUser.value ? selectedUser.value.id : "")
         selectedRoles.value.forEach(roleId => formData.append('roles[]', roleId))
         await axios.post('/user-managers/assign-roles', formData)
         toast.success('نقش‌ها با موفقیت تخصیص داده شد')

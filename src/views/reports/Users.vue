@@ -1,58 +1,71 @@
 <template>
-    <b-container fluid class="py-4" v-if="checkPermission(['report_users'])"> 
+    <b-container fluid class="py-4" v-if="checkPermission(['report_users'])">
         <!-- عنوان و لودر -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2>گزارش کاربران</h2>
-            <b-spinner small v-if="loading"></b-spinner>
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center mb-3">
+                <h3>
+                    <i class="bi bi-reception-4"></i>
+                    <span>
+                        گزارش کاربران
+                    </span>
+                </h3>
+                <b-spinner small v-if="loading"></b-spinner>
+            </div>
+            <div class="card-body">
+                <b-form @submit.prevent="fetchData()">
+                    <b-row>
+
+                        <b-col md="3">
+                            <b-form-group label="شماره موبایل">
+                                <b-form-input v-model="filters.mobile" placeholder="مثلاً 0912..."></b-form-input>
+                            </b-form-group>
+                        </b-col>
+                        <b-col md="3">
+                            <b-form-group label="کد ملی">
+                                <b-form-input v-model="filters.national_code" placeholder="کد ملی"></b-form-input>
+                            </b-form-group>
+                        </b-col>
+                        <b-col md="3">
+                            <b-form-group label="از تاریخ ثبت‌نام">
+                                <date-picker display-format="jYYYY/jMM/jDD" format="YYYY-MM-DD"
+                                    v-model="filters.date_from"></date-picker>
+
+                            </b-form-group>
+                        </b-col>
+                        <b-col md="3">
+                            <b-form-group label="تا تاریخ ثبت‌نام">
+                                <date-picker display-format="jYYYY/jMM/jDD" format="YYYY-MM-DD"
+                                    v-model="filters.date_to"></date-picker>
+
+                            </b-form-group>
+                        </b-col>
+                        <b-col md="3">
+                            <b-form-group label="از تاریخ تولد">
+                                <date-picker display-format="jYYYY/jMM/jDD" format="YYYY-MM-DD"
+                                    v-model="filters.birth_date_from"></date-picker>
+
+                            </b-form-group>
+                        </b-col>
+                        <b-col md="3">
+                            <b-form-group label="تا تاریخ تولد">
+                                <date-picker display-format="jYYYY/jMM/jDD" format="YYYY-MM-DD"
+                                    v-model="filters.birth_date_to"></date-picker>
+
+                            </b-form-group>
+                        </b-col>
+                    </b-row>
+                    <b-button type="submit" variant="primary">
+                        <i class="bi bi-save2"></i>
+                        <span>
+
+                            اعمال فیلتر
+                        </span>
+
+                    </b-button>
+                </b-form>
+            </div>
         </div>
 
-        <!-- فیلترها -->
-        <b-card class="mb-4">
-            <b-form @submit.prevent="fetchData()">
-                <b-row>
-
-                    <b-col md="3">
-                        <b-form-group label="شماره موبایل">
-                            <b-form-input v-model="filters.mobile" placeholder="مثلاً 0912..."></b-form-input>
-                        </b-form-group>
-                    </b-col>
-                    <b-col md="3">
-                        <b-form-group label="کد ملی">
-                            <b-form-input v-model="filters.national_code" placeholder="کد ملی"></b-form-input>
-                        </b-form-group>
-                    </b-col>
-                    <b-col md="3">
-                        <b-form-group label="از تاریخ ثبت‌نام">
-                            <date-picker display-format="jYYYY/jMM/jDD" format="YYYY-MM-DD"
-                                v-model="filters.date_from"></date-picker>
-
-                        </b-form-group>
-                    </b-col>
-                    <b-col md="3">
-                        <b-form-group label="تا تاریخ ثبت‌نام">
-                            <date-picker display-format="jYYYY/jMM/jDD" format="YYYY-MM-DD"
-                                v-model="filters.date_to"></date-picker>
-
-                        </b-form-group>
-                    </b-col>
-                    <b-col md="3">
-                        <b-form-group label="از تاریخ تولد">
-                            <date-picker display-format="jYYYY/jMM/jDD" format="YYYY-MM-DD"
-                                v-model="filters.birth_date_from"></date-picker>
-
-                        </b-form-group>
-                    </b-col>
-                    <b-col md="3">
-                        <b-form-group label="تا تاریخ تولد">
-                            <date-picker display-format="jYYYY/jMM/jDD" format="YYYY-MM-DD"
-                                v-model="filters.birth_date_to"></date-picker>
-
-                        </b-form-group>
-                    </b-col>
-                </b-row>
-                <b-button type="submit" variant="primary">اعمال فیلتر</b-button>
-            </b-form>
-        </b-card>
 
         <!-- جدول -->
         <b-card>

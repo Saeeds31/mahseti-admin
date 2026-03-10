@@ -1,6 +1,11 @@
 <template>
-    <div class="container mt-4" v-if="checkPermission(['manager_update'])">
-        <h3>تخصیص نقش به {{ user ? user.full_name : "کاربر" }}</h3>
+    <div class="container mt-4 bg-gray" v-if="checkPermission(['manager_update'])">
+        <h3 class=" p-2">
+            <i class="bi bi-person-workspace"></i>
+            <span>
+                تخصیص نقش به {{ user ? user.full_name : "کاربر" }}
+            </span>
+        </h3>
         <form @submit.prevent="submitForm" class="row g-3">
             <!-- انتخاب نقش‌ها -->
             <div class="col-md-12">
@@ -11,7 +16,11 @@
 
             <div class="col-12">
                 <button type="submit" class="btn btn-primary" :disabled="loading">
-                    {{ loading ? 'در حال ذخیره...' : 'ذخیره نقش‌ها' }}
+                    <i class="bi bi-save2"></i>
+                    <span class="mx-2">
+
+                        {{ loading ? 'در حال ذخیره...' : 'ذخیره نقش‌ها' }}
+                    </span>
                 </button>
             </div>
         </form>
@@ -77,7 +86,7 @@ const submitForm = async () => {
     try {
         loading.value = true
         const formData = new FormData()
-        formData.append('user_id',user.value.id);
+        formData.append('user_id', user.value.id);
         selectedRoles.value.forEach(roleId => formData.append('roles[]', roleId))
         await axios.post('/user-managers/assign-roles', formData)
         toast.success('نقش‌ها با موفقیت تخصیص داده شد')

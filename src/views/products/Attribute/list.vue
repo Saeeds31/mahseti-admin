@@ -2,10 +2,20 @@
   <div class="container mt-4" v-if="checkPermission(['attributes_view'])">
 
     <!-- دکمه افزودن ویژگی -->
-    <div class="mb-3 text-end">
-      <router-link to="/products/attributes/create" class="btn btn-success">
-        افزودن ویژگی
-      </router-link>
+    <div class="card mb-2">
+      <div class="card-header d-flex justify-content-between align-items-center mb-3">
+        <h3>
+          <i class="bi bi-list-check"></i>
+          <span>لیست ویژگی ها</span>
+        </h3>
+        <router-link to="/products/attributes/create" class="btn btn-success">
+          <i class="bi bi-plus"></i>
+          <span>
+            افزودن ویژگی
+
+          </span>
+        </router-link>
+      </div>
     </div>
 
     <!-- جدول -->
@@ -32,15 +42,20 @@
                 <td>{{ attr.name }}</td>
                 <td>
                   <router-link :to="`/products/attributes/${attr.id}/edit`" class="btn btn-sm btn-warning me-2">
-                    ویرایش
+                    <i class="bi bi-pen"></i>
+                    <span> ویرایش</span>
                   </router-link>
 
                   <router-link :to="`/products/attributes/${attr.id}/values`" class="btn btn-sm btn-info me-2">
-                    افزودن مقدار
+                    <i class="bi bi-plus"></i>
+                    <span>
+                      افزودن مقدار
+                    </span>
                   </router-link>
 
                   <button class="btn btn-sm btn-danger" @click="deleteAttribute(attr.id)">
-                    حذف
+                    <i class="bi bi-trash3-fill"></i>
+                    <span>حذف</span>
                   </button>
                 </td>
               </tr>
@@ -94,7 +109,7 @@ const deleteAttribute = (id) => {
         Swal.fire("موفق", "ویژگی حذف شد", "success");
         getAttributes();
       } catch (err) {
-        Swal.fire("خطا", "مشکلی در حذف پیش آمد", "error");
+        Swal.fire("خطا", err.response.data.message, "error");
       }
     }
   });

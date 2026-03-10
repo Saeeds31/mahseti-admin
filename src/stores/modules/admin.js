@@ -18,8 +18,6 @@ export const useAdmin = defineStore("admin", {
 
   actions: {
     checkPermission(permissions, type) {
-      console.log(permissions, this.permissions);
-
       let res = false;
       if (type == "or") {
         res = permissions.some((adminPer) =>

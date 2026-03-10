@@ -3,25 +3,18 @@
 
     <!-- باکس فیلتر -->
     <div class="card mb-3">
-      <div class="card-body">
-        <form @submit.prevent="getProvinces">
-          <div class="row g-2">
-            <div class="col-md-4">
-              <input v-model="filters.name" type="text" class="form-control" placeholder="جستجو بر اساس نام استان" />
-            </div>
-            <div class="col-md-2">
-              <button class="btn btn-primary w-100" type="submit">جستجو</button>
-            </div>
-          </div>
-        </form>
+      <div class="card-header d-flex justify-content-between align-items-center mb-3">
+        <h3>
+          <i class="bi bi-map"></i>
+          <span>مدیریت استان ها</span>
+        </h3>
+        <router-link to="/location/provinces/create" class="btn btn-success">
+          <i class="bi bi-save2"></i>
+          <span>
+            افزودن استان
+          </span>
+        </router-link>
       </div>
-    </div>
-
-    <!-- دکمه افزودن -->
-    <div class="mb-3 text-end">
-      <router-link to="/location/provinces/create" class="btn btn-success">
-        افزودن استان
-      </router-link>
     </div>
 
     <!-- جدول -->
@@ -46,7 +39,8 @@
                 <td>{{ province.name }}</td>
                 <td>
                   <router-link :to="`/location/provinces/${province.id}/edit`" class="btn btn-sm btn-warning me-2">
-                    ویرایش
+                    <i class="bi bi-pen"></i>
+                    <span> ویرایش</span>
                   </router-link>
                   <button class="btn btn-sm btn-danger" @click="deleteProvince(province.id)">
                     حذف

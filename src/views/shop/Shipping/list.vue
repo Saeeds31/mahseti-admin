@@ -35,31 +35,31 @@
                     <thead>
                         <tr>
                             <th>نام</th>
-                            <th>هزینه پیش‌فرض</th>
+                            <th>توضیحات</th>
+                            <th>هزینه </th>
                             <th>وضعیت</th>
                             <th>عملیات</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="method in shippingMethods" :key="method.id">
-                            <td>{{ method.name }}</td>
-                            <td>{{ method.default_cost }} تومان</td>
+                            <td>{{ method.title }}</td>
+                            <td>{{ method.description }}</td>
+                            <td>{{ method.cost }} تومان</td>
                             <td>
                                 <span :class="method.status ? 'badge bg-success' : 'badge bg-danger'">
                                     {{ method.status ? 'فعال' : 'غیرفعال' }}
                                 </span>
                             </td>
                             <td>
-                                <router-link :to="`/shop/shipping/${method.id}/range`"
-                                    class="btn btn-sm btn-success me-2">
-                                    بازه ها
-                                </router-link>
                                 <router-link :to="`/shop/shipping/${method.id}/edit`"
                                     class="btn btn-sm btn-primary me-2">
-                                    ویرایش
+                                    <i class="bi bi-pen"></i>
+                                    <span>  ویرایش</span>
                                 </router-link>
                                 <button @click="deleteMethod(method.id)" class="btn btn-sm btn-danger">
-                                    حذف
+                                    <i class="bi bi-trash3-fill"></i>
+                                    <span>حذف</span>
                                 </button>
                             </td>
                         </tr>

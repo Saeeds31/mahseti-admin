@@ -1,14 +1,18 @@
 <template>
-    <div class="wallets-page" v-if="checkPermission(['wallet_view'])">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4>مدیریت کیف پول‌ها</h4>
-        </div>
+    <div class="container mt-3 wallets-page" v-if="checkPermission(['wallet_view'])">
+
 
         <!-- فیلتر -->
         <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center mb-3">
+                <h3>
+                    <i class="bi bi-wallet"></i>
+                    <span>مدیریت کیف پول‌ها</span>
+                </h3>
+            </div>
             <div class="card-body">
                 <input v-model="filters.search" @input="getWallets" type="text" class="form-control"
-                    placeholder="جستجو بر اساس نام کاربر یا موجودی" />
+                    placeholder="جستجو بر اساس نام کاربر  " />
             </div>
         </div>
 
@@ -34,13 +38,16 @@
                             <tr v-for="wallet in wallets.data" :key="wallet.id">
                                 <td>{{ wallet.id }}</td>
                                 <td>{{ wallet.user?.full_name ?? '-' }}</td>
-                                <td>{{ wallet.balance }}</td>
+                                <td>{{ Number(wallet.balance).toLocaleString('fa-ir') }}</td>
                                 <td>
                                     <button class="btn btn-sm btn-success me-2" @click="openModal(wallet, 'deposit')">
+                                        <i class="bi bi-plus"></i>
                                         افزایش موجودی
                                     </button>
                                     <button class="btn btn-sm btn-warning" @click="openModal(wallet, 'withdraw')">
+                                        <i class="bi bi-dash"></i>
                                         کاهش موجودی
+
                                     </button>
                                 </td>
                             </tr>
@@ -65,7 +72,12 @@
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label">مبلغ (تومان)</label>
+                            <label class="form-label">مبلغ
+
+                                <span v-if="form.amount">
+                                    {{ Number(form.amount).toLocaleString('fa-ir') }}
+                                </span>
+                                (تومان)</label>
                             <input v-model="form.amount" type="number" class="form-control"
                                 placeholder="مثلاً 100000" />
                         </div>
@@ -76,9 +88,11 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x"></i>
                             انصراف
                         </button>
                         <button type="button" class="btn btn-primary" @click="submitForm">
+                            <i class="bi bi-save2"></i>
                             ثبت
                         </button>
                     </div>
@@ -112,15 +126,22 @@ const form = ref({
     amount: "",
     description: "",
 });
+let abortController = null;
 
 const getWallets = async (page = 1) => {
     loading.value = true;
+    if (abortController) {
+        abortController.abort();
+    }
+
+    abortController = new AbortController();
     try {
         const response = await axios.get("/wallets", {
             params: {
                 page,
                 search: filters.value.search,
             },
+            signal: abortController.signal,
         });
         wallets.value = response.data;
         currentPage.value = page;

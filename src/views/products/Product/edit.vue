@@ -1,21 +1,32 @@
 <template>
-  <div class="product-edit container py-4" v-if="checkPermission(['menu_list'])">
+  <div class="product-edit container py-4" v-if="checkPermission(['product_update'])">
     <!-- دکمه‌های مرحله‌ای -->
     <div class="step-buttons d-flex flex-wrap align-items-center mb-4">
       <template v-for="(step, index) in steps" :key="index">
-        <button class=" d-flex align-items-center me-2 mb-2 step-btn" :class="{ active: currentStep === index }"
-          :disabled="!step.enabled" @click="currentStep = index">
+        <button class="btn btn-primary d-flex align-items-end me-2 mb-2 step-btn"
+          :class="{ active: currentStep === index }" :disabled="!step.enabled" @click="currentStep = index">
           <i :class="step.icon" class="me-1"></i>
           {{ step.label }}
           <span v-if="step.completed" class="ms-1 text-success">&#10003;</span>
         </button>
-        <div v-if="index < steps.length - 1" class=" border-top border-secondary mx-1 step-divider"></div>
+        <div v-if="index < steps.length - 1">
+          <i class="bi bi-caret-left"></i>
+          <i class="bi bi-caret-left"></i>
+          <i class="bi bi-caret-left"></i>
+          <i class="bi bi-caret-left"></i>
+          <i class="bi bi-caret-left"></i>
+        </div>
       </template>
     </div>
 
     <!-- مرحله اول: اطلاعات اصلی محصول -->
-    <div v-if="currentStep === 0">
-      <h4>مرحله اول: اطلاعات اصلی محصول</h4>
+    <div class="bg-gray" v-if="currentStep === 0">
+      <h3>
+        <i class="bi bi-info"></i>
+        <span>
+          مرحله اول: اطلاعات اصلی محصول
+        </span>
+      </h3>
       <form @submit.prevent="saveStep1">
         <div class="formSetp1 g-3">
           <div class=" border-box row">
@@ -134,61 +145,77 @@
           </div>
         </div>
 
-        <button type="submit" :disabled="loading" class="btn btn-primary mt-3">ذخیره مرحله اول</button>
+        <button type="submit" :disabled="loading" class="btn btn-primary mt-3">
+          <i class="bi bi-save2"></i>
+          <span>
+            ذخیره مرحله اول
+          </span>
+        </button>
       </form>
     </div>
 
     <!-- مرحله دوم: واریانت‌ها -->
-    <div v-else-if="currentStep === 1">
-      <h4>مرحله دوم: تنوع ها</h4>
-      <div class="row formSetp2">
-        <div class="col-md-12 mb-3">
-          <label>ویژگی ها:</label>
-          <Treeselect v-model="selectedAttibutes" :multiple="true" :options="attributes"
-            :normalizer="attributeNormalizer" />
-        </div>
-        <template v-for="attributeId in selectedAttibutes" :key="attributeId">
+    <div class="bg-gray" v-else-if="currentStep === 1">
+      <h3>
+        <i class="bi bi-info"></i>
+        <span>
+          مرحله دوم: تنوع ها
+        </span>
+      </h3>
+      <form>
+        <div class="row formSetp2">
           <div class="col-md-12 mb-3">
-            <label>انتخاب {{ attrName(attributeId) }}:</label>
-            <Treeselect :valueFormat="'object'" v-model="attributeValue[attributeId]" :multiple="true"
-              :options="attributes.find(attr => attr.id == attributeId).values"
-              :normalizer="attributeValuesNormalizer" />
+            <label>ویژگی ها:</label>
+            <Treeselect v-model="selectedAttibutes" :multiple="true" :options="attributes"
+              :normalizer="attributeNormalizer" />
           </div>
-        </template>
-      </div>
+          <template v-for="attributeId in selectedAttibutes" :key="attributeId">
+            <div class="col-md-12 mb-3">
+              <label>انتخاب {{ attrName(attributeId) }}:</label>
+              <Treeselect :valueFormat="'object'" v-model="attributeValue[attributeId]" :multiple="true"
+                :options="attributes.find(attr => attr.id == attributeId).values"
+                :normalizer="attributeValuesNormalizer" />
+            </div>
+          </template>
+        </div>
 
-      <div v-if="variantCombinations.length" class="table-responsive mt-3 formSetp2">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <template v-for="attributeId in selectedAttibutes" :key="attributeId">
-                <th v-if="attributeValue[attributeId] && attributeValue[attributeId].length">
+        <div v-if="variantCombinations.length" class="table-responsive mt-3 formSetp2">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <template v-for="attributeId in selectedAttibutes" :key="attributeId">
+                  <th v-if="attributeValue[attributeId] && attributeValue[attributeId].length">
 
-                  {{ attrName(attributeId) }}</th>
-              </template>
-              <th>SKU</th>
-              <th>قیمت</th>
-              <th>موجودی</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(variant, index) in variantCombinations" :key="index">
-              <template v-for="AV in variant.values">
-                <td>{{ AV ? AV.value : "" }}</td>
-              </template>
-              <td><input v-model="variant.sku" class="form-control" /></td>
-              <td><input v-model="variant.price" type="number" class="form-control" /></td>
-              <td><input v-model="variant.stock" type="number" class="form-control" /></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                    {{ attrName(attributeId) }}</th>
+                </template>
+                <th>SKU</th>
+                <th>قیمت</th>
+                <th>موجودی</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(variant, index) in variantCombinations" :key="index">
+                <template v-for="AV in variant.values">
+                  <td>{{ AV ? AV.value : "" }}</td>
+                </template>
+                <td><input v-model="variant.sku" class="form-control" /></td>
+                <td><input v-model="variant.price" type="number" class="form-control" /></td>
+                <td><input v-model="variant.stock" type="number" class="form-control" /></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </form>
 
       <button class="btn btn-primary mt-3" @click="saveStep2" :disabled="!variantCombinations.length && loading">
-        ذخیره مرحله دوم
+        <i class="bi bi-save2"></i>
+        <span>
+          ذخیره مرحله دوم
+
+        </span>
       </button>
     </div>
-    <div v-else-if="currentStep === 2">
+    <div class="bg-gray" v-else-if="currentStep === 2">
       <div class="border-box speci">
         <h4>جدول مشخصات</h4>
         <div class="col-md-12 mb-3">
@@ -499,7 +526,7 @@ async function saveStep1() {
           formData.append(key, product.value.main_image)
         }
       }
-      else if (key != "categories") {
+      else if (key != "categories" && form.value[key]) {
         formData.append(key, form.value[key] ?? "")
       }
     })
@@ -582,10 +609,7 @@ async function saveStep3() {
   flex-wrap: wrap;
 }
 
-.step-btn {
-  background-color: transparent;
-  color: #0d6efd;
-}
+
 
 @media (max-width:768px) {
   .step-buttons {

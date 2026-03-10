@@ -5,11 +5,13 @@
       <div class="col-md-7">
         <div class="card">
           <div class="card-header">
-            لیست مقادیر ویژگی
-            <b class="text-danger">
-              {{ attribute }}
+            <h3>
+              لیست مقادیر ویژگی
+              <b class="text-danger">
+                {{ attribute }}
 
-            </b>
+              </b>
+            </h3>
           </div>
           <div class="card-body">
             <div v-if="loading" class="text-center py-4">
@@ -30,10 +32,12 @@
                     <td>{{ val.value }}</td>
                     <td>
                       <button class="btn btn-sm btn-warning me-2" @click="editValue(val)">
-                        ویرایش
+                        <i class="bi bi-pen"></i>
+                        <span> ویرایش</span>
                       </button>
                       <button class="btn btn-sm btn-danger" @click="deleteValue(val.id)">
-                        حذف
+                        <i class="bi bi-trash3-fill"></i>
+                        <span>حذف</span>
                       </button>
                     </td>
                   </tr>
@@ -58,6 +62,7 @@
               </div>
 
               <button :disabled="loading" type="submit" class="btn btn-primary">
+                <i class="bi bi-save2"></i>
                 {{ form.id ? "به‌روزرسانی" : "ثبت" }}
               </button>
               <button v-if="form.id" type="button" class="btn btn-secondary ms-2" @click="resetForm">
@@ -72,7 +77,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, reactive } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useRoute } from "vue-router";
@@ -83,6 +88,7 @@ const store = useAdmin();
 const checkPermission = store.checkPermission;
 const route = useRoute();
 const attributeId = route.params.id; // آیدی ویژگی از URL
+const errors = reactive({})
 
 const values = ref([]);
 let loading = ref(false);
@@ -122,16 +128,20 @@ const saveValue = async () => {
       formData.append("_method", "PUT")
       await axios.post(`/attributes/${attributeId}/values/${form.value.id}`, formData);
       toast.success('مقدار ویرایش شد ✅')
+      resetForm();
+      getValues();
     } else {
       await axios.post(`/attributes/${attributeId}/values`, formData);
       toast.success('مقدار با موفقیت اضافه شد ✅')
+      resetForm();
+      getValues();
     }
-    resetForm();
-    getValues();
-  } catch (err) {
-    console.log(err);
 
-    Swal.fire("خطا", "مشکلی در ذخیره پیش آمد", "error");
+  } catch (err) {
+    if (err.response?.status === 422) {
+      Object.assign(errors, err.response.data.errors)
+    }
+    toast.error(errors.value[0])
   } finally {
     loading.value = false;
   }

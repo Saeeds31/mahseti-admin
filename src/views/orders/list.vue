@@ -1,15 +1,21 @@
 <template>
-    <div class="container mt-4 orders-page" v-if="checkPermission(['order_view'])">
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4>مدیریت سفارش‌ها</h4>
-            <router-link to="/orders/create" class="btn btn-primary">
-                افزودن سفارش
-            </router-link>
-        </div>
-
-        <!-- Filters -->
+    <div class="container mt-4  orders-page" v-if="checkPermission(['order_view'])">
+   
         <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center mb-3">
+                <h3>
+                    <i class="bi bi-list-check"></i>
+                    <span>
+                        مدیریت سفارش‌ها
+                    </span>
+                </h3>
+                <router-link to="/orders/create" class="btn btn-primary">
+                    <i class="bi bi-plus"></i>
+                    <span>
+                        افزودن سفارش
+                    </span>
+                </router-link>
+            </div>
             <div class="card-body row g-2">
                 <div class="col-md-3">
                     <input v-model="filters.search" @input="getOrders" type="text" class="form-control"

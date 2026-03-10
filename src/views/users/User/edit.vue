@@ -1,7 +1,12 @@
 <template>
-    <div class="container mt-4" v-if="checkPermission(['user_update'])">
-        <h3>ویرایش کاربر</h3>
-        <form @submit.prevent="updateForm" class="row g-3">
+    <div class="container mt-4 bg-gray" v-if="checkPermission(['user_update'])">
+        <h3 class="p-2">
+            <i class="bi bi-people"></i>
+            <span>
+                ویرایش کاربر
+            </span>
+        </h3>
+        <form @submit.prevent="updateForm" class="bg-light p-3 rounded row g-3">
             <!-- نام کامل -->
             <div class="col-md-6">
                 <label class="form-label">نام کامل</label>
@@ -41,7 +46,10 @@
 
             <div class="col-12">
                 <button type="submit" class="btn btn-success" :disabled="loading">
-                    {{ loading ? 'در حال بروزرسانی...' : 'بروزرسانی' }}
+                    <i class="bi bi-save2"></i>
+                    <span class="mx-2">
+                        {{ loading ? 'در حال بروزرسانی...' : 'بروزرسانی' }}
+                    </span>
                 </button>
             </div>
         </form>

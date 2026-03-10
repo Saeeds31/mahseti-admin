@@ -2,6 +2,15 @@
     <div class="container py-4" v-if="checkPermission(['report_orders'])">
         <!-- فیلترها -->
         <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center mb-3">
+                <h3>
+                    <i class="bi bi-reception-4"></i>
+                    <span>
+                        گزارش سفارشات
+                    </span>
+                </h3>
+                <b-spinner small v-if="loading"></b-spinner>
+            </div>
             <div class="card-body">
                 <form @submit.prevent="getReport()" class="row g-3">
                     <div class="col-md-2">
@@ -44,7 +53,11 @@
                     </div>
                     <div class="col-12">
                         <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-save2"></i>
+                            <span class="mx-2">
                             اعمال فیلتر
+
+                            </span>
                         </button>
                     </div>
                 </form>
@@ -58,7 +71,7 @@
             <div class="card-body">
                 <!-- عنوان + سوییچر -->
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2 class="h5 mb-0">گزارش فروش</h2>
+                    <h2 class="h5 mb-0"></h2>
                     <div class="btn-group">
                         <button @click="viewMode = 'chart'"
                             :class="['btn', viewMode === 'chart' ? 'btn-primary' : 'btn-outline-primary']"

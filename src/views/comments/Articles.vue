@@ -1,30 +1,5 @@
 <template>
   <div class="container mt-4" v-if="checkPermission(['comment_blogs'])">
-
-    <!-- باکس فیلتر -->
-    <div class="card mb-3">
-      <div class="card-body">
-        <form @submit.prevent="getComments">
-          <div class="row g-2">
-            <div class="col-md-4">
-              <input v-model="filters.content" type="text" class="form-control" placeholder="جستجو بر اساس متن کامنت" />
-            </div>
-            <div class="col-md-2">
-              <button class="btn btn-primary w-100" type="submit">جستجو</button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- دکمه افزودن -->
-    <div class="mb-3 text-end">
-      <router-link to="/comments/create" class="btn btn-success">
-        افزودن کامنت
-      </router-link>
-    </div>
-
-    <!-- جدول -->
     <div class="card">
       <div class="card-body">
         <div v-if="loading" class="text-center py-5">
@@ -58,10 +33,12 @@
                 </td>
                 <td>
                   <router-link :to="`/comments/${comment.id}/edit`" class="btn btn-sm btn-warning me-2">
-                    ویرایش
+                    <i class="bi bi-pen"></i>
+                    <span>  ویرایش</span>
                   </router-link>
                   <button class="btn btn-sm btn-danger" @click="deleteComment(comment.id)">
-                    حذف
+                    <i class="bi bi-trash3-fill"></i>
+                    <span>حذف</span>
                   </button>
                 </td>
               </tr>

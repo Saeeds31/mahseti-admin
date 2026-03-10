@@ -1,19 +1,29 @@
 <template>
   <div class="container mt-4" v-if="checkPermission(['product_view'])">
-
-    <!-- باکس فیلتر -->
-    <div class="card mb-3">
+    <div class="card mb-2">
+      <div class="card-header d-flex justify-content-between align-items-center mb-3">
+        <h3>
+          <i class="bi bi-box-fill"></i>
+          <span>مدیریت محصولات</span>
+        </h3>
+        <router-link to="/products/create" class="btn btn-success">
+          <i class="bi bi-plus"></i>
+          <span>
+            افزودن محصول
+          </span>
+        </router-link>
+      </div>
       <div class="card-body">
-        <form @submit.prevent="getProducts">
+        <form @submit.prevent="getProducts()">
           <div class="row g-2">
             <div class="col-md-4">
-              <input v-model="filters.title" type="text" class="form-control" placeholder="جستجو بر اساس نام محصول" />
+              <input v-model="filters.search" type="text" class="form-control" placeholder="جستجو بر اساس نام محصول" />
             </div>
             <div class="col-md-2">
               <select v-model="filters.status" class="form-select">
                 <option value="">همه وضعیت‌ها</option>
-                <option :value="1">فعال</option>
-                <option :value="0">غیرفعال</option>
+                <option value="published">فعال</option>
+                <option value="unpublished">غیرفعال</option>
               </select>
             </div>
             <div class="col-md-2">
@@ -23,14 +33,6 @@
         </form>
       </div>
     </div>
-
-    <!-- دکمه افزودن -->
-    <div class="mb-3 text-end">
-      <router-link to="/products/create" class="btn btn-success">
-        افزودن محصول
-      </router-link>
-    </div>
-
     <!-- جدول -->
     <div class="card">
       <div class="card-body">
@@ -71,10 +73,12 @@
                 </td>
                 <td>
                   <router-link :to="`/products/${product.id}/edit`" class="btn btn-sm btn-warning me-2">
-                    ویرایش
+                    <i class="bi bi-pen"></i>
+                    <span> ویرایش</span>
                   </router-link>
                   <button class="btn btn-sm btn-danger" @click="deleteProduct(product.id)">
-                    حذف
+                    <i class="bi bi-trash3-fill"></i>
+                    <span>حذف</span>
                   </button>
                 </td>
               </tr>
@@ -95,7 +99,7 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute, useRouter, } from "vue-router";
 import { useAdmin } from '@/stores/modules/admin';
 const store = useAdmin();
 const checkPermission = store.checkPermission;
@@ -104,10 +108,10 @@ const router = useRouter();
 const route = useRoute();
 const products = ref({ data: [], meta: null });
 const loading = ref(false);
-const filters = ref({ title: "", status: "" });
+const filters = ref({ search: "", status: "" });
 let currentUrl = "/products";
 
-const getProducts = async (url = currentUrl) => {
+async function getProducts(url = currentUrl) {
   loading.value = true;
   try {
     const { data } = await axios.get(url, { params: filters.value });
@@ -120,13 +124,13 @@ const getProducts = async (url = currentUrl) => {
   }
 };
 
-const changePage = (page) => {
-  if (page) {
-    router.replace({ name: route.name, query: { page: page } })
-    getProducts(`${currentUrl}?page=${page}`)
+function changePage(selectedPage) {
+  if (selectedPage) {
+    router.replace({ name: route.name, query: { page: selectedPage } })
+    getProducts(`${currentUrl}?page=${selectedPage}`)
   }
   else currentUrl = "/products"
-};
+}
 const deleteProduct = (id) => {
   Swal.fire({
     title: "حذف محصول",

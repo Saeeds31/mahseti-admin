@@ -1,20 +1,31 @@
 <template>
-  <div class="container py-4" v-if="checkPermission(['attributes_update'])">
+  <div class="container py-4 mt-4 bg-gray" v-if="checkPermission(['attributes_update'])">
+    <h3 class=" p-2">
+      <i class="bi bi-list-check"></i>
+      <span>
+        ویرایش ویژگی
+      </span>
+    </h3>
     <b-card>
-      <h5 class="mb-3">ویرایش ویژگی</h5>
       <b-form @submit.prevent="handleSubmit">
         <b-row>
           <!-- Name -->
           <b-col cols="12" md="12">
             <b-form-group label="نام ویژگی" label-for="name">
-              <b-form-input id="name" v-model="form.name" :state="errors.name ? false : null" />
+              <b-form-input id="name" v-model="form.name" />
               <small v-if="errors.name" class="text-danger">{{ errors.name[0] }}</small>
             </b-form-group>
           </b-col>
         </b-row>
 
         <div class="mt-3">
-          <b-button :disabled="loading" type="submit" variant="primary">ویرایش ویژگی</b-button>
+          <b-button :disabled="loading" type="submit" variant="primary">
+            <i class="bi bi-save2"></i>
+            <span class="mx-2">
+              ویرایش ویژگی
+
+            </span>
+          </b-button>
         </div>
       </b-form>
     </b-card>
@@ -22,7 +33,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted } from 'vue'
+import { reactive, onMounted, ref } from 'vue'
 import axios from 'axios'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'

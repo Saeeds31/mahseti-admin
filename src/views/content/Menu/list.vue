@@ -1,10 +1,18 @@
 <template>
   <div class="container mt-4" v-if="checkPermission(['menu_view'])">
-    <!-- دکمه افزودن -->
-    <div class="mb-3 text-end">
-      <router-link to="/content/menus/create" class="btn btn-success">
-        افزودن منو
-      </router-link>
+    <div class="card mb-2">
+      <div class="card-header d-flex justify-content-between align-items-center mb-3">
+        <h3>
+          <i class="bi bi-list-columns-reverse"></i>
+          <span>مدیریت منو</span>
+        </h3>
+        <router-link to="/content/menus/create" class="btn btn-success">
+          <i class="bi bi-plus"></i>
+          <span>
+            افزودن منو
+          </span>
+        </router-link>
+      </div>
     </div>
     <!-- جدول -->
     <div class="card">
@@ -33,17 +41,13 @@
                 </td>
                 <td>{{ menu.parent?.title || '---' }}</td>
                 <td>
-                  <router-link
-                    :to="`/content/menus/${menu.id}/edit`"
-                    class="btn btn-sm btn-warning me-2"
-                  >
-                    ویرایش
+                  <router-link :to="`/content/menus/${menu.id}/edit`" class="btn btn-sm btn-warning me-2">
+                    <i class="bi bi-pen"></i>
+                    <span> ویرایش</span>
                   </router-link>
-                  <button
-                    class="btn btn-sm btn-danger"
-                    @click="deleteMenu(menu.id)"
-                  >
-                    حذف
+                  <button class="btn btn-sm btn-danger" @click="deleteMenu(menu.id)">
+                    <i class="bi bi-trash3-fill"></i>
+                    <span>حذف</span>
                   </button>
                 </td>
               </tr>

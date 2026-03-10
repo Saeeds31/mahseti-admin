@@ -2,6 +2,15 @@
     <div class="container py-4" v-if="checkPermission(['report_products'])">
         <!-- فیلترها -->
         <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center mb-3">
+                <h3>
+                    <i class="bi bi-reception-4"></i>
+                    <span>
+                        گزارش محصولات
+                    </span>
+                </h3>
+                <b-spinner small v-if="loading"></b-spinner>
+            </div>
             <div class="card-body">
                 <form @submit.prevent="getReport()" class="row g-3">
                     <div class="col-md-2">
@@ -49,7 +58,10 @@
                     </div>
                     <div class="col-12">
                         <button type="submit" class="btn btn-primary w-100">
-                            اعمال فیلتر
+                            <i class="bi bi-save2"></i>
+                            <span>
+                                اعمال فیلتر
+                            </span>
                         </button>
                     </div>
                 </form>

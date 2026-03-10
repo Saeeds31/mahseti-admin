@@ -7,7 +7,7 @@
           <!-- Title -->
           <b-col cols="12" md="6">
             <b-form-group label="عنوان" label-for="title">
-              <b-form-input id="title" v-model="form.title" :state="errors.title ? false : null" />
+              <b-form-input id="title" v-model="form.title" />
               <small v-if="errors.title" class="text-danger">{{ errors.title[0] }}</small>
             </b-form-group>
           </b-col>
@@ -15,7 +15,7 @@
           <!-- Slug -->
           <b-col cols="12" md="6">
             <b-form-group label="Slug" label-for="slug">
-              <b-form-input id="slug" v-model="form.slug" :state="errors.slug ? false : null" />
+              <b-form-input id="slug" v-model="form.slug" />
               <small v-if="errors.slug" class="text-danger">{{ errors.slug[0] }}</small>
             </b-form-group>
           </b-col>
@@ -24,8 +24,8 @@
             <b-form-group label="دسته‌بندی " label-for="category_ids">
               <Treeselect v-if="parentOptions.length" id="category_ids" :multiple="true" v-model="form.category_ids"
                 :normalizer="normalizer" :options="parentOptions" placeholder="انتخاب دسته‌بندی " :clearable="true" />
-              <b-form-invalid-feedback v-if="errors.category_ids">{{ errors.category_ids[0]
-              }}</b-form-invalid-feedback>
+              <small class="text-danger" v-if="errors.category_ids">{{ errors.category_ids[0]
+              }}</small>
             </b-form-group>
           </b-col>
           <b-col cols="12" md="6">
@@ -48,8 +48,8 @@
           <b-col cols="12">
             <b-form-group label="توضیح کوتاه">
               <b-form-textarea v-model="form.short_description" rows="2" />
-              <b-form-invalid-feedback v-if="errors.short_description">{{ errors.short_description[0]
-              }}</b-form-invalid-feedback>
+              <small class="text-danger" v-if="errors.short_description">{{ errors.short_description[0]
+              }}</small>
             </b-form-group>
           </b-col>
 
@@ -64,7 +64,7 @@
           <!-- Meta Title -->
           <b-col cols="12" md="6">
             <b-form-group label="Meta Title" label-for="meta_title">
-              <b-form-input id="meta_title" v-model="form.meta_title" :state="errors.meta_title ? false : null" />
+              <b-form-input id="meta_title" v-model="form.meta_title" />
               <small v-if="errors.meta_title" class="text-danger">{{ errors.meta_title[0] }}</small>
             </b-form-group>
           </b-col>
@@ -72,8 +72,7 @@
           <!-- Meta Description -->
           <b-col cols="12" md="6">
             <b-form-group label="Meta Description" label-for="meta_description">
-              <b-form-input id="meta_description" v-model="form.meta_description"
-                :state="errors.meta_description ? false : null" />
+              <b-form-input id="meta_description" v-model="form.meta_description" />
               <small v-if="errors.meta_description" class="text-danger">{{ errors.meta_description[0] }}</small>
             </b-form-group>
           </b-col>
@@ -83,8 +82,13 @@
         </b-row>
 
         <div class="mt-3">
-          <b-button type="submit" :disabled="loading" variant="primary">ویرایش
-            مقاله</b-button>
+          <b-button type="submit" :disabled="loading" variant="primary">
+            <i class="bi bi-save2"></i>
+            <span class="mx-2">
+              ویرایش
+              مقاله
+            </span>
+          </b-button>
         </div>
       </b-form>
     </b-card>
@@ -139,15 +143,15 @@ onMounted(async () => {
   try {
     // GET اطلاعات مقاله
     const res = await axios.get(`/articles/${route.params.id}`)
-
-    oldImage.value =
-      [{
-        name: res.data.data.image.split('/').pop(),
-        size: 0,
-        type: 'image/jpeg',
-        ext: res.data.data.image.split('.').pop(),
-        url: `${baseImageAddress}${res.data.data.image}`,
-      }];
+    if (res.data.data.image)
+      oldImage.value =
+        [{
+          name: res.data.data.image.split('/').pop(),
+          size: 0,
+          type: 'image/jpeg',
+          ext: res.data.data.image.split('.').pop(),
+          url: `${baseImageAddress}${res.data.data.image}`,
+        }];
     let ids = [];
     res.data.data.categories.forEach((item) => ids.push(item.id))
     form.category_ids = ids;

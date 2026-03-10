@@ -1,39 +1,47 @@
 <template>
-  <div class="container py-4" v-if="checkPermission(['city_view'])">
-    <b-card>
-      <h5 class="mb-3">ایجاد شهر</h5>
-      <b-form @submit.prevent="handleSubmit">
-        <b-row>
-          <!-- Province -->
-          <b-col cols="12" md="6">
-            <b-form-group label="استان" label-for="province">
+  <div class="container py-4 bg-gray mt-3" v-if="checkPermission(['city_view'])">
+    <h3 class=" p-2">
+      <i class="bi bi-pin-map"></i>
+      <span>
+        ایجاد شهر جدید
+      </span>
+    </h3>
+    <b-form @submit.prevent="handleSubmit">
+      <b-row>
+        <!-- Province -->
+        <b-col cols="12" md="6">
+          <b-form-group label="استان" label-for="province">
 
 
-              <Treeselect id="parent_id" v-model="form.province_id" :options="provinceOptions"
-                placeholder="انتخاب استان" :clearable="true" />
-              <small v-if="errors.province_id" class="text-danger">{{ errors.province_id[0] }}</small>
-            </b-form-group>
-          </b-col>
+            <Treeselect id="parent_id" v-model="form.province_id" :options="provinceOptions" placeholder="انتخاب استان"
+              :clearable="true" />
+            <small v-if="errors.province_id" class="text-danger">{{ errors.province_id[0] }}</small>
+          </b-form-group>
+        </b-col>
 
-          <!-- Name -->
-          <b-col cols="12" md="6">
-            <b-form-group label="نام شهر" label-for="name">
-              <b-form-input id="name" v-model="form.name" :state="errors.name ? false : null" />
-              <small v-if="errors.name" class="text-danger">{{ errors.name[0] }}</small>
-            </b-form-group>
-          </b-col>
-        </b-row>
+        <!-- Name -->
+        <b-col cols="12" md="6">
+          <b-form-group label="نام شهر" label-for="name">
+            <b-form-input id="name" v-model="form.name" />
+            <small v-if="errors.name" class="text-danger">{{ errors.name[0] }}</small>
+          </b-form-group>
+        </b-col>
+      </b-row>
 
-        <div class="mt-3">
-          <b-button type="submit" :disabled="loading" variant="success">ایجاد شهر</b-button>
-        </div>
-      </b-form>
-    </b-card>
+      <div class="mt-3">
+        <b-button type="submit" :disabled="loading" variant="success">
+          <i class="bi bi-save2"></i>
+          <span>
+            ایجاد شهر
+          </span>
+        </b-button>
+      </div>
+    </b-form>
   </div>
 </template>
 
 <script setup>
-import { reactive, onMounted } from 'vue'
+import { reactive, onMounted, ref } from 'vue'
 import axios from 'axios'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'

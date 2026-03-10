@@ -1,7 +1,12 @@
 <template>
-    <div class="container mt-4" v-if="checkPermission(['user_store'])">
-        <h3>ایجاد کاربر جدید</h3>
-        <form @submit.prevent="submitForm" class="row g-3">
+    <div class="container mt-4 bg-gray" v-if="checkPermission(['user_store'])">
+        <h3 class=" p-2">
+            <i class="bi bi-people"></i>
+            <span>
+                ایجاد کاربر جدید
+            </span>
+        </h3>
+        <form @submit.prevent="submitForm" class="row g-3 bg-light rounded p-3">
             <!-- نام کامل -->
             <div class="col-md-6">
                 <label class="form-label">نام کامل</label>
@@ -40,7 +45,11 @@
 
             <div class="col-12">
                 <button type="submit" class="btn btn-primary" :disabled="loading">
-                    {{ loading ? 'در حال ذخیره...' : 'ذخیره' }}
+                    <i class="bi bi-save2"></i>
+                    <span class="mx-2">
+                        {{ loading ? 'در حال ذخیره...' : 'ذخیره' }}
+
+                    </span>
                 </button>
             </div>
         </form>

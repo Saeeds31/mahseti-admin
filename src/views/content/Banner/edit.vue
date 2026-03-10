@@ -1,77 +1,84 @@
 <template>
-  <div class="container py-4" v-if="checkPermission(['banner_update'])">
-    <b-card>
-      <h5 class="mb-3">ویرایش بنر</h5>
-      <b-form @submit.prevent="handleSubmit">
-        <b-row>
-          <!-- Title -->
-          <b-col cols="12" md="6">
-            <b-form-group label="عنوان" label-for="title">
-              <b-form-input id="title" v-model="form.title" :state="errors.title ? false : null"
-                placeholder="عنوان بنر" />
-              <small v-if="errors.title" class="text-danger">{{ errors.title[0] }}</small>
-            </b-form-group>
-          </b-col>
-          <b-col cols="12" md="6">
-            <b-form-group label="نسبت" label-for="ratio">
-              <b-form-input id="ratio" v-model="form.ratio" :state="errors.ratio ? false : null"
-                placeholder="نسبت بنر" />
-              <small v-if="errors.ratio" class="text-danger">{{ errors.ratio[0] }}</small>
-            </b-form-group>
-          </b-col>
-          <!-- Desktop Image -->
-          <b-col cols="12" md="6">
-            <b-form-group label="تصویر دسکتاپ" label-for="image_desktop">
-              <VueFileAgent @update:raw-model-value="imageLoaded" :raw-model-value="oldImage" :maxFiles="1"
-                accept=".pdf,.jpg,.png" theme="grid" deletable sortable />
-              <small v-if="errors.image_desktop" class="text-danger">{{ errors.image_desktop[0] }}</small>
-            </b-form-group>
-          </b-col>
+  <div class="container py-4 bg-gray mt-3" v-if="checkPermission(['banner_update'])">
+    <h3 class=" p-2">
+      <i class="bi bi-images"></i>
+      <span>
+        ویرایش بنر
+      </span>
+    </h3>
+    <b-form @submit.prevent="handleSubmit">
+      <b-row>
+        <!-- Title -->
+        <b-col cols="12" md="6">
+          <b-form-group label="عنوان" label-for="title">
+            <b-form-input id="title" v-model="form.title" :state="errors.title ? false : null"
+              placeholder="عنوان بنر" />
+            <small v-if="errors.title" class="text-danger">{{ errors.title[0] }}</small>
+          </b-form-group>
+        </b-col>
+        <b-col cols="12" md="6">
+          <b-form-group label="نسبت" label-for="ratio">
+            <b-form-input id="ratio" v-model="form.ratio" :state="errors.ratio ? false : null" placeholder="نسبت بنر" />
+            <small v-if="errors.ratio" class="text-danger">{{ errors.ratio[0] }}</small>
+          </b-form-group>
+        </b-col>
+        <!-- Desktop Image -->
+        <b-col cols="12" md="6">
+          <b-form-group label="تصویر دسکتاپ" label-for="image_desktop">
+            <VueFileAgent @update:raw-model-value="imageLoaded" :raw-model-value="oldImage" :maxFiles="1"
+              accept=".pdf,.jpg,.png" theme="grid" deletable sortable />
+            <small v-if="errors.image_desktop" class="text-danger">{{ errors.image_desktop[0] }}</small>
+          </b-form-group>
+        </b-col>
 
-          <!-- Mobile Image -->
-          <b-col cols="12" md="6">
-            <b-form-group label="تصویر موبایل" label-for="image_mobile">
-              <VueFileAgent @update:raw-model-value="imageLoaded1" :raw-model-value="oldImage1" :maxFiles="1"
-                accept=".pdf,.jpg,.png" theme="grid" deletable sortable />
+        <!-- Mobile Image -->
+        <b-col cols="12" md="6">
+          <b-form-group label="تصویر موبایل" label-for="image_mobile">
+            <VueFileAgent @update:raw-model-value="imageLoaded1" :raw-model-value="oldImage1" :maxFiles="1"
+              accept=".pdf,.jpg,.png" theme="grid" deletable sortable />
 
-              <small v-if="errors.image_mobile" class="text-danger">{{ errors.image_mobile[0] }}</small>
-            </b-form-group>
-          </b-col>
+            <small v-if="errors.image_mobile" class="text-danger">{{ errors.image_mobile[0] }}</small>
+          </b-form-group>
+        </b-col>
 
-          <!-- Link -->
-          <b-col cols="12" md="6">
-            <b-form-group label="لینک" label-for="link">
-              <b-form-input id="link" v-model="form.link" :state="errors.link ? false : null" placeholder="لینک بنر" />
-              <small v-if="errors.link" class="text-danger">{{ errors.link[0] }}</small>
-            </b-form-group>
-          </b-col>
-          <!-- Position -->
-          <b-col cols="12" md="6">
-            <b-form-group label="موقعیت" label-for="position">
-              <Treeselect id="position" :multiple="false" v-model="form.position" v-if="form.position"
-                :options="positions" placeholder="انتخاب موقعیت" />
-              <small v-if="errors.position" class="text-danger">{{ errors.position[0] }}</small>
-            </b-form-group>
-          </b-col>
+        <!-- Link -->
+        <b-col cols="12" md="6">
+          <b-form-group label="لینک" label-for="link">
+            <b-form-input id="link" v-model="form.link" :state="errors.link ? false : null" placeholder="لینک بنر" />
+            <small v-if="errors.link" class="text-danger">{{ errors.link[0] }}</small>
+          </b-form-group>
+        </b-col>
+        <!-- Position -->
+        <b-col cols="12" md="6">
+          <b-form-group label="موقعیت" label-for="position">
+            <Treeselect id="position" :multiple="false" v-model="form.position" v-if="form.position"
+              :options="positions" placeholder="انتخاب موقعیت" />
+            <small v-if="errors.position" class="text-danger">{{ errors.position[0] }}</small>
+          </b-form-group>
+        </b-col>
 
 
-          <!-- Status -->
-          <b-col cols="12" md="6">
-            <b-form-group label="وضعیت" label-for="status"> <b-form-checkbox id="status" v-model="form.status"
-                :state="errors.status ? false : null" :true-value="1" :false-value="0">
+        <!-- Status -->
+        <b-col cols="12" md="6">
+          <b-form-group label="وضعیت" label-for="status"> <b-form-checkbox id="status" v-model="form.status"
+              :state="errors.status ? false : null" :true-value="1" :false-value="0">
 
-                فعال
-              </b-form-checkbox>
-              <small v-if="errors.status" class="text-danger">{{ errors.status[0] }}</small>
-            </b-form-group>
-          </b-col>
-        </b-row>
+              فعال
+            </b-form-checkbox>
+            <small v-if="errors.status" class="text-danger">{{ errors.status[0] }}</small>
+          </b-form-group>
+        </b-col>
+      </b-row>
 
-        <div class="mt-3">
-          <b-button type="submit" :disabled="loading" variant="primary">ویرایش بنر</b-button>
-        </div>
-      </b-form>
-    </b-card>
+      <div class="mt-3">
+        <b-button type="submit" :disabled="loading" variant="primary">
+          <i class="bi bi-save2"></i>
+          <span class="mx-2">
+            ویرایش بنر
+          </span>
+        </b-button>
+      </div>
+    </b-form>
   </div>
 </template>
 

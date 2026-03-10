@@ -1,23 +1,31 @@
 <template>
-  <div class="container mt-4" v-if="checkPermission(['slider_update'])">
-    <h3>ویرایش اسلایدر</h3>
+  <div class="container mt-4 bg-gray mt-4" v-if="checkPermission(['slider_update'])">
+    <h3 class=" p-2">
+      <i class="bi bi-sliders"></i>
+      <span>
+        ویرایش اسلایدر
+      </span>
+    </h3>
     <form @submit.prevent="updateForm" class="row g-3">
       <!-- عنوان -->
       <div class="col-md-6">
         <label class="form-label">عنوان</label>
-        <input v-model="form.title" type="text" class="form-control" required maxlength="255" />
+        <input v-model="form.title" type="text" class="form-control" maxlength="255" />
+        <small v-if="errors.title" class="text-danger">{{ errors.title[0] }}</small>
       </div>
 
       <!-- لینک -->
       <div class="col-md-6">
         <label class="form-label">لینک (اختیاری)</label>
         <input v-model="form.link" type="text" class="form-control" maxlength="255" />
+        <small v-if="errors.link" class="text-danger">{{ errors.link[0] }}</small>
       </div>
 
       <!-- توضیحات -->
       <div class="col-8">
         <label class="form-label">توضیحات (اختیاری)</label>
         <Editor v-model="form.description" />
+        <small v-if="errors.description" class="text-danger">{{ errors.description[0] }}</small>
       </div>
 
       <!-- تصویر -->
@@ -27,6 +35,7 @@
           accept=".pdf,.jpg,.png" theme="grid" deletable sortable>
         </VueFileAgent>
 
+        <small v-if="errors.image" class="text-danger">{{ errors.image[0] }}</small>
       </div>
 
 
@@ -38,17 +47,23 @@
           <option value="desktop">دسکتاپ</option>
           <option value="mobile">موبایل</option>
         </select>
+        <small v-if="errors.type" class="text-danger">{{ errors.type[0] }}</small>
       </div>
 
       <!-- متن دکمه -->
       <div class="col-md-6">
         <label class="form-label">متن دکمه (اختیاری)</label>
         <input v-model="form.button_text" type="text" class="form-control" maxlength="100" />
+        <small v-if="errors.button_text" class="text-danger">{{ errors.button_text[0] }}</small>
       </div>
 
       <div class="col-12">
         <button type="submit" class="btn btn-success" :disabled="loading">
-          {{ loading ? 'در حال بروزرسانی...' : 'بروزرسانی' }}
+          <i class="bi bi-save2"></i>
+          <span class="mx-2">
+            {{ loading ? 'در حال بروزرسانی...' : 'بروزرسانی' }}
+          </span>
+
         </button>
       </div>
     </form>

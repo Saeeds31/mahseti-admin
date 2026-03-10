@@ -1,49 +1,57 @@
 <template>
-  <div class="container py-4" v-if="checkPermission(['menu_store'])">
-    <b-card>
-      <h5 class="mb-3">ایجاد منو</h5>
-      <b-form @submit.prevent="handleSubmit">
-        <b-row>
-          <!-- Title -->
-          <b-col cols="12" md="6">
-            <b-form-group label="عنوان" label-for="title">
-              <b-form-input id="title" v-model="form.title" :state="errors.title ? false : null" />
-              <small v-if="errors.title" class="text-danger">{{ errors.title[0] }}</small>
-            </b-form-group>
-          </b-col>
+  <div class="container py-4 bg-gray mt-4" v-if="checkPermission(['menu_store'])">
+    <h3 class=" p-2">
+      <i class="bi bi-list-columns-reverse"></i>
+      <span>
+        ایجاد منو
+      </span>
+    </h3>
+    <h5 class="mb-3"></h5>
+    <b-form @submit.prevent="handleSubmit">
+      <b-row>
+        <!-- Title -->
+        <b-col cols="12" md="6">
+          <b-form-group label="عنوان" label-for="title">
+            <b-form-input id="title" v-model="form.title" />
+            <small v-if="errors.title" class="text-danger">{{ errors.title[0] }}</small>
+          </b-form-group>
+        </b-col>
 
-          <!-- Link -->
-          <b-col cols="12" md="6">
-            <b-form-group label="لینک" label-for="link">
-              <b-form-input id="link" v-model="form.link" :state="errors.link ? false : null" />
-              <small v-if="errors.link" class="text-danger">{{ errors.link[0] }}</small>
-            </b-form-group>
-          </b-col>
+        <!-- Link -->
+        <b-col cols="12" md="6">
+          <b-form-group label="لینک" label-for="link">
+            <b-form-input id="link" v-model="form.link" />
+            <small v-if="errors.link" class="text-danger">{{ errors.link[0] }}</small>
+          </b-form-group>
+        </b-col>
 
-          <!-- Parent -->
-          <b-col cols="12" md="12">
-            <b-form-group label="منوی والد" label-for="parent">
-              <Treeselect :normalizer="normalizer" id="parent" v-model="form.parent_id" :options="menuOptions"
-                placeholder="انتخاب منوی والد" />
-              <small v-if="errors.parent_id" class="text-danger">{{ errors.parent_id[0] }}</small>
-            </b-form-group>
-          </b-col>
+        <!-- Parent -->
+        <b-col cols="12" md="12">
+          <b-form-group label="منوی والد" label-for="parent">
+            <Treeselect :normalizer="normalizer" id="parent" v-model="form.parent_id" :options="menuOptions"
+              placeholder="انتخاب منوی والد" />
+            <small v-if="errors.parent_id" class="text-danger">{{ errors.parent_id[0] }}</small>
+          </b-form-group>
+        </b-col>
 
-          <!-- Icon -->
-          <b-col cols="12" md="12">
-            <b-form-group label="آیکن" label-for="icon">
-              <VueFileAgent @select="imageLoaded" :maxFiles="1" accept=".pdf,.jpg,.png" theme="grid" deletable
-                sortable />
-              <small v-if="errors.icon" class="text-danger">{{ errors.icon[0] }}</small>
-            </b-form-group>
-          </b-col>
-        </b-row>
+        <!-- Icon -->
+        <b-col cols="12" md="12">
+          <b-form-group label="آیکن" label-for="icon">
+            <VueFileAgent @select="imageLoaded" :maxFiles="1" accept=".pdf,.jpg,.png" theme="grid" deletable sortable />
+            <small v-if="errors.icon" class="text-danger">{{ errors.icon[0] }}</small>
+          </b-form-group>
+        </b-col>
+      </b-row>
 
-        <div class="mt-3">
-          <b-button type="submit" :disabled="loading" variant="success">ایجاد منو</b-button>
-        </div>
-      </b-form>
-    </b-card>
+      <div class="mt-3">
+        <b-button type="submit" :disabled="loading" variant="success">
+          <i class="bi bi-save2"></i>
+          <span>
+            ایجاد منو
+          </span>
+        </b-button>
+      </div>
+    </b-form>
   </div>
 </template>
 

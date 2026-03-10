@@ -3,8 +3,11 @@
         <div class="modalContent">
             <div class="modalHeader">
                 <h5>{{ title }}</h5>
-                 <button @click="closeModal(null)">
-                    بستن
+                <button @click="closeModal(null)">
+                    <i class="bi bi-x-lg"></i>
+                    <span>
+                        بستن
+                    </span>
                 </button>
             </div>
             <slot />

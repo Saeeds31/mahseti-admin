@@ -1,3 +1,5 @@
+@import "../../../node_modules/vue-multiselect/dist/vue-multiselect.min.css";
+
 @font-face {
   font-family: "yekanbakhlight";
   src: url(../fonts/yekanBakh/light.ttf);
@@ -113,4 +115,21 @@ input.multiselect__input {
 
 .mr-auto {
   margin-right: auto;
+}
+.bg-gray {
+  background: #dadada;
+  padding: 8px;
+  border-radius: 8px;
+}
+.container h3 {
+  padding: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.container form {
+  border-radius: var(--bs-border-radius) !important;
+  --bs-bg-opacity: 1;
+  background-color: rgba(var(--bs-light-rgb), var(--bs-bg-opacity)) !important;
+  padding: 1rem !important;
 }
