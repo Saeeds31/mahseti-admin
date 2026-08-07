@@ -15,7 +15,7 @@
                             <li><strong>کدپستی:</strong> {{ order.address.postal_code }}</li>
                             <li><strong>شماره تماس گیرنده:</strong> {{ order.address.phone }}</li>
                         </template>
-                        <li><strong>روش حمل:</strong> {{ order.shipping_method?.name }}</li>
+                        <li><strong>روش حمل:</strong> {{ order.shipping?.title }}</li>
                         <li><strong>روش پرداخت:</strong> {{ paymentMethods[order.payment_method] }}</li>
                     </ul>
                 </b-card>
@@ -41,7 +41,9 @@
                     <b-form-group label="وضعیت سفارش" label-for="order-status">
                         <b-form-select id="order-status" v-model="order.status" :options="orderStatusOptions" />
                     </b-form-group>
-
+                    <p v-if="order.status == 'reserved'" class="text-success">
+                        {{ `تاریخ اتمام رزرو: ${new Date(order.reserved_until).toLocaleDateString('fa')}` }}
+                    </p>
                     <b-form-group label="وضعیت پرداخت" label-for="payment-status">
                         <b-form-select id="payment-status" disabled v-model="order.payment_status"
                             :options="paymentStatusOptions" />
@@ -74,11 +76,26 @@
                                 <tr v-for="(item, index) in order.items" :key="item.id">
                                     <td>{{ index + 1 }}</td>
                                     <td>{{ getProductTitle(item) }}</td>
-                                    <td>{{ getProductImage(item) }}</td>
+                                    <td>
+                                        <img width="64" :src="getProductImage(item)" alt="">
+                                    </td>
                                     <td>{{ item.quantity }}</td>
                                     <td>{{ item.price.toLocaleString() }}</td>
                                     <td>{{ Number(item.quantity * item.price).toLocaleString() }}</td>
                                 </tr>
+                                <template v-for="(childOrder, index) in order.child_orders" :key="index">
+                                    <tr v-for="(item, index) in childOrder.items" :key="item.id">
+                                        <td>اضافه شده</td>
+                                        <td>{{ getProductTitle(item) }}</td>
+                                        <td>
+                                            <img width="64" :src="getProductImage(item)" alt="">
+
+                                        </td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>{{ item.price.toLocaleString() }}</td>
+                                        <td>{{ Number(item.quantity * item.price).toLocaleString() }}</td>
+                                    </tr>
+                                </template>
                             </tbody>
                         </table>
                     </div>
@@ -128,11 +145,12 @@ const paymentStatusOptions = [
     { value: "failed", text: "ناموفق" },
     { value: "refunded", text: "برگشت داده شده" },
 ]
-
+let child_orders = ref([])
 const fetchOrder = async () => {
     try {
         const { data } = await axios.get(`/orders/${route.params.id}`)
-        order.value = data.data
+        order.value = data.data.order
+        child_orders.value = data.data.child_orders
     } catch (e) {
         toast.error("خطا در گرفتن اطلاعات سفارش")
     }
@@ -159,10 +177,12 @@ function getProductTitle(item) {
     return title;
 }
 function getProductImage(item) {
-    if (!item.main_image) {
+    if (!item.product) {
         return ""
     }
-    return baseImageAddress + item.main_image
+    if (item.product.main_image && item.product.main_image.includes('http'))
+        return item.product.main_image
+    return baseImageAddress + item.product.main_image
 }
 const formatPrice = (val) => {
     if (!val) return "0"

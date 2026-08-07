@@ -99,9 +99,9 @@ const flattenCategories = (categoryItems, level = 0, parent = null) => {
       parent, // برای دسترسی به والد
     });
     // اگر فرزندان وجود دارند، آن‌ها را هم به‌صورت بازگشتی اضافه کن
-    if (category.children && category.children.length > 0) {
+    if (category.all_children && category.all_children.length > 0) {
       result = result.concat(
-        flattenCategories(category.children, level + 1, category)
+        flattenCategories(category.all_children, level + 1, category)
       );
     }
   });

@@ -16,6 +16,12 @@
               <b-form-input id="name" v-model="form.name" placeholder="نام ویژگی را وارد کنید" />
               <small v-if="errors.name" class="text-danger">{{ errors.name[0] }}</small>
             </b-form-group>
+            <b-form-group label="نوع ویژگی" label-for="value_type">
+              <b-form-select name="value_type" v-model="form.value_type">
+                <b-form-select-option value="code">کد رنگی</b-form-select-option>
+                <b-form-select-option value="image">تصویر</b-form-select-option>
+              </b-form-select>
+            </b-form-group>
           </b-col>
         </b-row>
 
@@ -35,7 +41,7 @@
 <script setup>
 import { reactive, ref } from "vue"
 import axios from "axios"
-import { BForm, BFormGroup, BFormInput, BButton, BCard, BRow, BCol } from "bootstrap-vue-3"
+import { BForm, BFormGroup, BFormInput, BButton, BCard, BRow, BCol, BFormSelect,BFormSelectOption } from "bootstrap-vue-3"
 import { toast } from "vue3-toastify"
 import "vue3-toastify/dist/index.css"
 
@@ -44,6 +50,7 @@ const store = useAdmin();
 const checkPermission = store.checkPermission;
 const form = reactive({
   name: "",
+  value_type:""
 })
 
 let loading = ref(false);
@@ -55,6 +62,7 @@ const handleSubmit = async () => {
   try {
     let formData = new FormData();
     formData.append("name", form.name)
+    formData.append("value_type", form.value_type)
     await axios.post("/attributes", formData)
     toast.success("ویژگی با موفقیت ایجاد شد ✅")
     form.name = ""

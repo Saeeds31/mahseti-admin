@@ -19,8 +19,17 @@ import Vue3PersianDatetimePicker from "vue3-persian-datetime-picker";
 import "@boindil/vue-file-agent-next/dist/vue-file-agent-next.css";
 // api.mahseti.shop
 // 127.0.0.1:8000
-axios.defaults.baseURL = "http://127.0.0.1:8000/api/v1/admin";
-window.baseImageAddress = "http://127.0.0.1:8000/storage_public/";
+axios.defaults.baseURL = "https://api.mahseti.shop/api/v1/admin";
+window.baseImageAddress = "https://api.mahseti.shop/storage_public/";
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      router.push({ name: "login" }); // برو به صفحه لاگین
+    }
+    return Promise.reject(error);
+  }
+);
 const app = createApp(App);
 // app.use(CKEditor)
 app.use(Vue3Toastify, {

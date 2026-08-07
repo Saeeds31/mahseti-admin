@@ -31,7 +31,14 @@
                         <Treeselect v-model="selectedAddress" :multiple="false" :options="addresses"
                             placeholder="انتخاب آدرس..." />
                     </div>
-
+                    <div v-if="reservedOrders.length" class="d-flex flex-column gap-2">
+                        <label for="">افزودن به سفارش رزرو:</label>
+                        <select v-model="form.parent_order" class="form-control" id="">
+                            <option v-for="(item, index) in reservedOrders" :key="index" :value="item">
+                                {{ `ارسال به ${item.receiver_name} با ${item.shipping_method}` }}
+                            </option>
+                        </select>
+                    </div>
                     <!-- افزودن محصول -->
                     <div class="col-12">
                         <label class="form-label">افزودن محصول</label>
@@ -71,18 +78,31 @@
                     </div>
 
                     <!-- روش حمل و نقل -->
-                    <div v-if="form.items.length" class="col-12">
-                        <label class="form-label">روش حمل و نقل</label>
-                        <Treeselect :normalizer="shippingNormalizer" v-if="shippings.length" :valueFormat="'object'"
-                            v-model="form.shipping_method" :multiple="false" :options="shippings"
-                            placeholder="انتخاب روش حمل..." />
-                    </div>
+                    <template v-if="!form.parent_order">
+                        <div v-if="form.items.length" class="col-12">
+                            <label class="form-label">روش حمل و نقل</label>
+                            <Treeselect :normalizer="shippingNormalizer" v-if="shippings.length" :valueFormat="'object'"
+                                v-model="form.shipping_method" :multiple="false" :options="shippings"
+                                placeholder="انتخاب روش حمل..." />
+                        </div>
+                    </template>
+
                 </form>
             </div>
 
             <!-- ستون جمع سفارش -->
             <div class="col-md-4 ">
+
                 <div class="card">
+
+                    <div v-if="!form.parent_order" class="d-flex flex-column gap-2">
+                        <label for="">نوع سفارش:</label>
+                        <select v-model="form.reservation_type" class="form-control" id="">
+                            <option value="">عادی</option>
+                            <option value="three_days">رزرو سه روزه</option>
+                            <option value="seven_days">رزرو هفت روزه</option>
+                        </select>
+                    </div>
                     <div class="card-header">
                         <h3>
                             <span>
@@ -101,6 +121,7 @@
                         <hr />
                         <h5>مبلغ نهایی: <strong>{{ total.toLocaleString() }} تومان</strong></h5>
                     </div>
+
                     <div class="card-footer">
                         <button class="btn btn-primary w-100" @click="submitOrder" :disabled="loading">
                             {{ loading ? 'در حال ثبت...' : 'ثبت سفارش' }}
@@ -126,6 +147,8 @@ const form = ref({
     user_id: null,
     address_id: null,
     shipping_method: null,
+    reservation_type: '',
+    parent_order: '',
     items: []
 })
 let sumQuantity = computed(() => {
@@ -151,6 +174,7 @@ let productOptions = ref([]);
 let shippings = ref([]);
 let selectedUser = ref(null);
 let wallet = ref(null);
+let reservation_type = ref("");
 watch(() => selectedUser.value, (newUser) => {
     if (newUser) {
         fetchAddresses(newUser.addresses);
@@ -163,6 +187,7 @@ watch(() => selectedUser.value, (newUser) => {
 watch(() => selectedAddress.value, (newAddress) => {
     if (newAddress) {
         showAvalibleShipping()
+        showAvalibleReservedOrder()
     } else {
         shippings.value = [];
     }
@@ -208,8 +233,8 @@ const fetchAddresses = async (asses) => {
 
 const shippingNormalizer = (node) => {
     return {
-        id: node.method_id,
-        label: node.shipping_method,
+        id: node.id,
+        label: node.name,
     }
 }
 let abortController1 = null;
@@ -274,9 +299,23 @@ const addProduct = () => {
         })
     }
     selectedQuantity.value = 1;
-    showAvalibleShipping()
+    showAvalibleShipping();
+    showAvalibleReservedOrder();
 }
+let reservedOrders = ref([]);
+// 
+async function showAvalibleReservedOrder() {
+    if (!selectedUser.value) return;
+    reservedOrders.value = [];
+    form.value.parent_order = "";
+    form.value.shipping_method = null;
+    let fd = new FormData();
+    fd.append('user_id', selectedUser.value.id)
+    fd.append('address_id', selectedAddress.value)
+    const { data } = await axios.post(`active-reservations`, fd);
+    reservedOrders.value = data.data.reservations
 
+}
 // حذف محصول
 const removeProduct = (index) => {
     form.value.items.splice(index, 1)
@@ -288,9 +327,13 @@ watch(() => form.value.shipping_method, async (val) => {
     }
     shippingCost.value = val.cost
 })
+watch(() => form.value.parent_order, async (val) => {
+    shippingCost.value = 0;
+})
+
 // ثبت سفارش
 const submitOrder = async () => {
-    if (!selectedUser.value || !selectedAddress.value || !form.value.items.length || !form.value.shipping_method) {
+    if (!selectedUser.value || !selectedAddress.value || !form.value.items.length && (!form.value.shipping_method || form.value.parent_order)) {
         return toast.error('لطفاً همه فیلدها را پر کنید')
     }
     loading.value = true;
@@ -310,10 +353,15 @@ const submitOrder = async () => {
         let formData = new FormData();
         formData.append("user_id", selectedUser.value.id)
         formData.append("address_id", selectedAddress.value)
-        formData.append("shipping_method_id", form.value.shipping_method?.method_id)
+        formData.append("shipping_id", form.value.parent_order ? form.value.parent_order.shipping_id : form.value.shipping_method?.id)
         formData.append("subtotal", subtotal.value)
         formData.append("discount_amount", discount_amount.value)
-        formData.append("shipping_cost", shippingCost.value)
+        formData.append("shipping_cost", form.value.parent_order ? 0 : shippingCost.value)
+        if (form.value.parent_order) {
+            formData.append("parent_order_id", form.value.parent_order.order_number)
+        } else if (form.value.reservation_type) {
+            formData.append("reservation_type", form.value.reservation_type)
+        }
         formData.append("total", total.value)
         form.value.items.forEach((item, index) => {
             formData.append(`items[${index}][product_id]`, item.product_id);

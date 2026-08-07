@@ -1,22 +1,20 @@
 <template>
   <div class="container mt-4 specifications-page" v-if="checkPermission(['specifications_view'])">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h4>مدیریت مشخصات</h4>
-      <router-link to="/products/specification/create" class="btn btn-primary">
-        افزودن مشخصه
-      </router-link>
-    </div>
-
-    <!-- Filters -->
-    <div class="card mb-3">
-      <div class="card-body row g-2">
-        <div class="col-md-4">
-          <input v-model="filters.search" @input="getSpecifications" type="text" class="form-control"
-            placeholder="جستجو در عنوان مشخصه" />
-        </div>
+    <div class="card mb-2">
+      <div class="card-header d-flex justify-content-between align-items-center mb-3">
+        <h3>
+          <i class="bi bi-table"></i>
+          <span>مدیریت مشخصه
+          </span>
+        </h3>
+        <router-link to="/products/specification/create" class="btn btn-primary">
+          <i class="bi bi-plus"></i>
+          <span> افزودن مشخصه
+          </span>
+        </router-link>
       </div>
     </div>
+
 
     <!-- Table -->
     <div class="card">
@@ -43,7 +41,7 @@
               <td>
                 <router-link :to="`/products/specification/${spec.id}/edit`" class="btn btn-sm btn-info me-1">
                   <i class="bi bi-pen"></i>
-                  <span>  ویرایش</span>
+                  <span> ویرایش</span>
                 </router-link>
                 <button class="btn btn-sm btn-danger" @click="confirmDelete(spec.id)">
                   <i class="bi bi-trash3-fill"></i>

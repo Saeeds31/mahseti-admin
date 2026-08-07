@@ -1,7 +1,23 @@
 <template>
   <b-navbar id="mainNavbar" variant="light" class="bg-white border-bottom px-3">
-    <b-navbar-brand href="#">Admin Panel</b-navbar-brand>
+    <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-1">
+        <span class="fw-bold">
+          شارژ پنل پیامک:
+        </span>
+        <span class="text-success">{{ smsCredit }}</span>
+        <span>ریال</span>
 
+      </div>
+      <b-button variant="warning" class="AddCharge d-flex gap-2 align-items-center" size="sm"
+        href="https://console.kavenegar.com/" target="_blank">
+        <i class="bi bi-plus"></i>
+        <span>
+          افزایش شارژ
+        </span>
+      </b-button>
+
+    </div>
     <b-navbar-nav class=" d-flex align-items-center gap-2">
       <!-- دکمه‌های اضافی -->
 
@@ -82,13 +98,32 @@
 <script setup>
 import { BNavbar, BNavbarBrand, BNavbarNav, BButton } from 'bootstrap-vue-3'
 import { useRouter } from "vue-router"
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { deleteCookie } from '../../tools/methods'
 import axios from 'axios'
 import { toast } from 'vue3-toastify'
 import { useAdmin } from '@/stores/modules/admin'
 import Modal from '@/components/shared/modal.vue'
 
+const smsCredit = ref("...");
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+const fetchSmsCredit = async () => {
+  while (true) {
+    try {
+      const { data } = await axios.get(
+        "https://api.kavenegar.com/v1/766E333435704B712F6D626858324876395A396A79574F58584669374C4E7450634F613364505A4A6D2F453D/client/fetch.json?apikey=58734E58626A776F504146536367354A643863484F7A5A34703838694E66336B6B5156546333665135524D3D"
+      );
+
+      smsCredit.value = Number(data.entries.remaincredit).toLocaleString("en-US");
+      return;
+    } catch (error) {
+      console.error("خطا در دریافت شارژ پنل پیامک، تلاش مجدد...");
+      await sleep(3000);
+    }
+  }
+};
 const router = useRouter()
 const store = useAdmin()
 
@@ -155,6 +190,25 @@ const logout = () => {
   delete axios.defaults.headers.common.Authorization
   router.push('/login')
 }
-
+onMounted(() => {
+  fetchSmsCredit();
+});
 
 </script>
+<style>
+.AddCharge {
+  background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+  color: white !important;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.625rem 1.25rem !important;
+  margin: 0.25rem 0.75rem !important;
+  border-radius: 10px !important;
+  color: #cfd8e3 !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+}
+</style>

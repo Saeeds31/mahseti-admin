@@ -23,6 +23,9 @@
                   <tr>
                     <th>شناسه</th>
                     <th>مقدار</th>
+                    <th v-if="attributeType">
+                      {{ attributeType == 'code' ? 'رنگ' : 'تصویر' }}
+                    </th>
                     <th>عملیات</th>
                   </tr>
                 </thead>
@@ -30,6 +33,13 @@
                   <tr v-for="val in values" :key="val.id">
                     <td>{{ val.id }}</td>
                     <td>{{ val.value }}</td>
+                    <td v-if="attributeType">
+                      <div v-if="attributeType == 'code'" class="colorcode"
+                        :style="{ backgroundColor: val.extra_value }">
+                      </div>
+                      <img width="64" :src="finderImage(val.extra_value)" v-else-if="val.extra_value"
+                        class="imageExtra" />
+                    </td>
                     <td>
                       <button class="btn btn-sm btn-warning me-2" @click="editValue(val)">
                         <i class="bi bi-pen"></i>
@@ -60,6 +70,15 @@
                 <label class="form-label">مقدار</label>
                 <input v-model="form.value" type="text" class="form-control" placeholder="مقدار ویژگی را وارد کنید" />
               </div>
+              <div class="mb-3" v-if="attributeType">
+                <label class="form-label">
+                  {{ attributeType == 'code' ? "رنگ" : form.id ? "آپلود تصویر جدید" : "انتخاب تصویر" }} </label>
+                <input v-if="attributeType == 'code'" v-model="form.extra_value" type="color" class="form-control"
+                  placeholder="مقدار ویژگی را وارد کنید" />
+                <VueFileAgent v-else-if="attributeType == 'image'" @select="imageLoaded" :maxFiles="1" accept=".pdf,.jpg,.png,.webp" theme="grid" deletable
+                  sortable />
+              </div>
+
 
               <button :disabled="loading" type="submit" class="btn btn-primary">
                 <i class="bi bi-save2"></i>
@@ -96,12 +115,21 @@ let loading = ref(false);
 const form = ref({
   id: null,
   value: "",
+  extra_value: ""
 });
+function finderImage(path) {
+  return `${baseImageAddress}${path}`
+}
+function imageLoaded(files) {
+  form.value.extra_value = files[0].file
+}
 let attribute = ref("");
+let attributeType = ref("");
 let currentUrl = `/attributes/${attributeId}/values`;
 const getAttribute = async () => {
   const res = await axios.get(`/attributes/${attributeId}`)
   attribute.value = res.data.data.name
+  attributeType.value = res.data.data.value_type
 }
 getAttribute();
 const getValues = async (url = currentUrl) => {
@@ -122,6 +150,9 @@ const saveValue = async () => {
   let formData = new FormData();
   formData.append("attribute_id", attributeId)
   formData.append("value", form.value.value)
+  if (attributeType.value) {
+    formData.append("extra_value", form.value.extra_value)
+  }
   loading.value = true;
   try {
     if (form.value.id) {
@@ -148,6 +179,8 @@ const saveValue = async () => {
 };
 
 const editValue = (val) => {
+  console.log(val);
+
   form.value = { ...val };
 };
 
@@ -180,3 +213,10 @@ onMounted(() => {
   getValues();
 });
 </script>
+<style>
+.colorcode {
+  width: 68px;
+  height: 34px;
+  border-radius: 8px;
+}
+</style>

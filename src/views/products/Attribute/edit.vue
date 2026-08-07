@@ -15,6 +15,12 @@
               <b-form-input id="name" v-model="form.name" />
               <small v-if="errors.name" class="text-danger">{{ errors.name[0] }}</small>
             </b-form-group>
+            <b-form-group label="نوع ویژگی" label-for="value_type">
+              <b-form-select name="value_type" v-model="form.value_type">
+                <b-form-select-option value="code">کد رنگی</b-form-select-option>
+                <b-form-select-option value="image">تصویر</b-form-select-option>
+              </b-form-select>
+            </b-form-group>
           </b-col>
         </b-row>
 
@@ -49,13 +55,18 @@ const props = defineProps({
 let route = useRoute();
 let loading = ref(false);
 
-const form = reactive({ name: '' })
+const form = reactive({
+  name: '',
+  value_type: ""
+
+})
 const errors = reactive({})
 
 onMounted(async () => {
   try {
     const res = await axios.get(`/attributes/${route.params.id}`)
     form.name = res.data.data.name
+    form.value_type = res.data.data.value_type
   } catch (err) {
     console.log(err);
 
@@ -69,6 +80,7 @@ const handleSubmit = async () => {
   try {
     let formData = new FormData();
     formData.append("name", form.name)
+    formData.append("value_type", form.value_type)
     formData.append("_method", "PUT")
     await axios.post(`/attributes/${route.params.id}`, formData)
     toast.success('ویژگی با موفقیت ویرایش شد ✅')

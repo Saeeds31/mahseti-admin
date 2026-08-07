@@ -281,8 +281,6 @@ const routes = [
   },
   //
 
-
-  
   {
     path: "/comments/products",
     name: "comments-products",
@@ -347,6 +345,62 @@ const routes = [
     path: "/orders/:id",
     name: "orders-show",
     component: () => import("@/views/orders/show.vue"),
+  },
+
+  {
+    path: "/pos/dashboard",
+    name: "pos-dashboard",
+    component: () => import("@/views/pos/dashboard.vue"),
+  },
+  {
+    path: "/pos/cashier-manager",
+    name: "pos-cashier-manager",
+    component: () => import("@/views/pos/cashierManager.vue"),
+  },
+  {
+    path: "/pos/cashier/sessions/:id/details",
+    name: "pos-cashier-detail",
+    component: () => import("@/views/pos/cashierDetail.vue"),
+  },
+  {
+    path: "/pos/create",
+    name: "pos-create",
+    component: () => import("@/views/pos/createOrder.vue"),
+  },
+
+  {
+    path: "/pos/order/print/:id",
+    name: "pos-order-print-detail",
+    component: () => import("@/views/pos/orderPrint.vue"),
+  },
+
+  {
+    path: "/pos/order/:id",
+    name: "pos-order-detail",
+    component: () => import("@/views/pos/orderDetail.vue"),
+  },
+  {
+    path: "/pos/orders",
+    name: "pos-orders",
+    component: () => import("@/views/pos/orders.vue"),
+  },
+
+  {
+    path: "/pos/refunds",
+    name: "pos-refunds",
+    component: () => import("@/views/pos/refunds.vue"),
+  },
+
+  {
+    path: "/pos/cashiers",
+    name: "pos-cashiers",
+    component: () => import("@/views/pos/cashiers.vue"),
+  },
+
+  {
+    path: "/pos/reports",
+    name: "pos-reports",
+    component: () => import("@/views/pos/reports.vue"),
   },
   { path: "/:pathMatch(.*)*", redirect: "/dashboard" },
 ];

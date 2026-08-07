@@ -11,7 +11,7 @@
                         <b-col cols="6" md="3" class="dashboardItem" v-for="(value, key) in dashboard.orders"
                             :key="key">
                             <div class="small text-muted">{{ orderLabels[key]
-                            }}</div>
+                                }}</div>
                             <strong>{{
                                 isNaN(value) ? value :
                                     Number(value).toLocaleString()
@@ -55,7 +55,7 @@
                         <b-col cols="6" md="3" class="dashboardItem" v-for="(value, key) in dashboard.users" :key="key">
                             <div class="small text-muted">{{
                                 userLabels[key]
-                            }}</div>
+                                }}</div>
                             <strong>{{ isNaN(value) ? value :
                                 Number(value).toLocaleString() }}</strong>
                         </b-col>
@@ -76,7 +76,7 @@
                             :key="key">
                             <div class="small text-muted">{{
                                 commentLabels[key]
-                            }}</div>
+                                }}</div>
                             <strong>{{ isNaN(value) ? value :
                                 Number(value).toLocaleString() }}</strong>
                         </b-col>
@@ -159,9 +159,8 @@ const commentChartOptions = ref({ chart: { id: "comments" }, xaxis: { categories
 
 // دریافت داده از API
 onMounted(async () => {
-    // await axios.get("/run/permissions");
-    // await axios.get("/run/assign");
-
+    await axios.get("/run/permissions");
+    await axios.get("/run/assign");
     const { data } = await axios.get("/dashboard");
     dashboard.value = data.data;
 
