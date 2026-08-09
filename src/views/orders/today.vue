@@ -8,12 +8,29 @@
                         مدیریت سفارش‌ها
                     </span>
                 </h3>
-                <router-link to="/orders/create" class="btn btn-primary">
-                    <i class="bi bi-plus"></i>
-                    <span>
-                        افزودن سفارش
-                    </span>
-                </router-link>
+                <div class="d-flex align-items-center gap-2">
+                    <!-- انتخاب نوع پرینت -->
+                    <select v-model="printType" class="form-select form-select-sm" style="width: 200px;">
+                        <option value="full">پرینت کامل (جزئیات سفارش)</option>
+                        <option value="label">پرینت برچسب (فرستنده و گیرنده)</option>
+                    </select>
+                    
+                    <!-- دکمه پرینت گروهی -->
+                    <button 
+                        v-if="selectedOrders.length > 0" 
+                        @click="goToPrint" 
+                        class="btn btn-success"
+                    >
+                        <i class="bi bi-printer"></i>
+                        پرینت ({{ selectedOrders.length }})
+                    </button>
+                    <router-link to="/orders/create" class="btn btn-primary">
+                        <i class="bi bi-plus"></i>
+                        <span>
+                            افزودن سفارش
+                        </span>
+                    </router-link>
+                </div>
             </div>
             <div class="card-body row g-2">
                 <div class="col-md-3">
@@ -58,6 +75,14 @@
                 <table class="table table-bordered align-middle text-center">
                     <thead>
                         <tr>
+                            <th style="width: 50px;">
+                                <input 
+                                    type="checkbox" 
+                                    :checked="allSelected" 
+                                    @change="toggleAll"
+                                    :disabled="orders.length === 0"
+                                />
+                            </th>
                             <th>#</th>
                             <th>کاربر</th>
                             <th>آدرس</th>
@@ -66,21 +91,28 @@
                             <th>وضعیت سفارش</th>
                             <th>وضعیت پرداخت</th>
                             <th>روش پرداخت</th>
-                            <th>عملیات</th>
+                            <th style="width: 120px;">عملیات</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="loading">
-                            <td colspan="9" class="text-center">
+                            <td colspan="10" class="text-center">
                                 <div class="spinner-border" role="status"></div>
                             </td>
                         </tr>
                         <tr v-else v-for="order in orders" :key="order.id">
+                            <td>
+                                <input 
+                                    type="checkbox" 
+                                    :value="order.id" 
+                                    v-model="selectedOrders"
+                                />
+                            </td>
                             <td>{{ order.id }}</td>
                             <td>{{ order.user?.full_name ?? "-" }}</td>
                             <td>{{ order.address?.address_line ?? "-" }}</td>
-                            <td>{{ order.shipping_method?.name ?? "-" }}</td>
-                            <td>{{ order.total }} تومان</td>
+                            <td>{{ order.shipping?.title ?? "-" }}</td>
+                            <td>{{ Number(order.total).toLocaleString('fa-IR') }} تومان</td>
                             <td>
                                 <span class="badge" :class="statusBadge(order.status)">
                                     {{ statusText(order.status) }}
@@ -94,32 +126,39 @@
                             <td>{{ paymentMethodText(order.payment_method) }}</td>
                             <td>
                                 <router-link :to="`/orders/${order.id}`" class="btn btn-sm btn-info">
-                                    جزئیات
+                                    <i class="bi bi-eye"></i>
                                 </router-link>
+                                <!-- دکمه پرینت تکی -->
+                                <button @click="singlePrint(order.id)" class="btn btn-sm btn-secondary">
+                                    <i class="bi bi-printer"></i>
+                                </button>
                             </td>
                         </tr>
                         <tr v-if="!loading && orders.length === 0">
-                            <td colspan="9" class="text-center">هیچ سفارشی یافت نشد</td>
+                            <td colspan="10" class="text-center">هیچ سفارشی یافت نشد</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-
-
-
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
-
 import { useAdmin } from '@/stores/modules/admin';
+
+const router = useRouter();
 const store = useAdmin();
 const checkPermission = store.checkPermission;
+
 const orders = ref([]);
 const loading = ref(false);
+const selectedOrders = ref([]);
+const printType = ref('full');
+
 const filters = ref({
     search: "",
     status: "",
@@ -129,8 +168,52 @@ const filters = ref({
 const currentPage = ref(1);
 let abortController = null;
 
+// محاسبه انتخاب همه
+const allSelected = computed(() => {
+    return orders.value.length > 0 && 
+           orders.value.every(order => selectedOrders.value.includes(order.id));
+});
+
+// انتخاب/لغو انتخاب همه
+const toggleAll = (event) => {
+    if (event.target.checked) {
+        selectedOrders.value = orders.value.map(order => order.id);
+    } else {
+        selectedOrders.value = [];
+    }
+};
+
+// رفتن به صفحه پرینت با انتخاب‌های گروهی
+const goToPrint = () => {
+    if (selectedOrders.value.length === 0) {
+        alert('لطفاً حداقل یک سفارش را انتخاب کنید.');
+        return;
+    }
+    router.push({
+        path: '/orders/print',
+        query: { 
+            ids: selectedOrders.value.join(','),
+            type: printType.value
+        }
+    });
+};
+
+// پرینت تکی
+const singlePrint = (orderId) => {
+    router.push({
+        path: '/orders/print',
+        query: { 
+            ids: orderId.toString(),
+            type: printType.value
+        }
+    });
+};
+
 const getOrders = async (page = 1) => {
     loading.value = true;
+    // پاک کردن انتخاب‌ها
+    selectedOrders.value = [];
+    
     if (abortController) {
         abortController.abort();
     }
@@ -143,10 +226,13 @@ const getOrders = async (page = 1) => {
                 ...filters.value,
             },
             signal: abortController.signal,
-
         });
         orders.value = response.data.data;
         currentPage.value = page;
+    } catch (error) {
+        if (error.name !== 'AbortError') {
+            console.error('Error fetching orders:', error);
+        }
     } finally {
         loading.value = false;
     }
@@ -157,6 +243,7 @@ const statusText = (status) => {
         pending: "در انتظار",
         reserved: "رزرو شده",
         processing: "در حال پردازش",
+        paid: "پرداخت  شده",
         shipped: "ارسال شده",
         completed: "تکمیل شده",
         canceled: "لغو شده",
@@ -171,6 +258,7 @@ const statusBadge = (status) => {
         reserved: "bg-warning text-dark",
         processing: "bg-info",
         shipped: "bg-primary",
+        paid: "bg-success",
         completed: "bg-success",
         canceled: "bg-danger",
         returned: "bg-dark",
@@ -211,3 +299,75 @@ onMounted(() => {
     getOrders();
 });
 </script>
+
+<style scoped>
+/* استایل‌های اضافی برای بهبود ظاهر */
+.orders-page .btn-sm {
+    margin: 0 2px;
+}
+
+.orders-page .btn-sm i {
+    font-size: 14px;
+}
+
+/* استایل چک‌باکس‌ها */
+.orders-page input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #667eea;
+}
+
+/* استایل هدر جدول */
+.orders-page thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* استایل ردیف‌های جدول */
+.orders-page tbody tr {
+    transition: background-color 0.2s;
+}
+
+.orders-page tbody tr:hover {
+    background-color: #f8f9ff;
+}
+
+/* استایل دکمه‌ها */
+.orders-page .btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    transition: all 0.3s;
+}
+
+.orders-page .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.orders-page .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    transition: all 0.3s;
+}
+
+.orders-page .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* استایل سلکت پرینت */
+.orders-page .form-select-sm {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    transition: all 0.3s;
+}
+
+.orders-page .form-select-sm:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+</style>

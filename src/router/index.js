@@ -402,6 +402,11 @@ const routes = [
     name: "pos-reports",
     component: () => import("@/views/pos/reports.vue"),
   },
+  {
+    path: "/orders/print",
+    name: "orders-print",
+    component: () => import("@/views/orders/print.vue"),
+  },
   { path: "/:pathMatch(.*)*", redirect: "/dashboard" },
 ];
 const router = createRouter({
