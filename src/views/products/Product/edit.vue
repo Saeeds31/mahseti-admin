@@ -95,6 +95,13 @@
               </div>
 
               <div class="border-box">
+                <b-col cols="12">
+                  <b-form-group>
+                    <b-form-checkbox id="status" v-model="form.is_rechargeable" :true-value="1" :false-value="0">
+                      نمایش در لیست شارژ مجدد
+                    </b-form-checkbox>
+                  </b-form-group>
+                </b-col>
                 <div class="col-md-12 mb-3">
                   <label class="form-label">نوع فروش</label>
                   <select v-model="form.sales_channel" class="form-select">
@@ -303,10 +310,11 @@ const form = ref({
   description: '',
   categories: [],
   main_image: '',
+  is_rechargeable: false,
   meta_title: '',
   meta_description: '',
   status: '',
-  sales_channel:'both',
+  sales_channel: 'both',
   discount_value: '',
   discount_type: '',
   barcode: '',
@@ -461,6 +469,7 @@ async function loadProduct() {
 
   Object.assign(form.value, {
     title: product.value.title,
+    is_rechargeable: Number(product.value.is_rechargeable),
     description: product.value.description,
     categories: product.value.categories.map((c) => c.id),
     meta_title: product.value.meta_title,
@@ -621,7 +630,11 @@ async function saveStep1() {
         // اگه تغییری نداده، چیزی ارسال نمی‌کنیم تا ویدیوی فعلی دست‌نخورده بماند
         return
       }
+      if (key == 'is_rechargeable') {
+        formData.append('is_rechargeable', Number(form.value.is_rechargeable))
 
+        return
+      }
       if (key === 'main_image') {
         if (mainImageChanged.value) {
           if (form.value.main_image) formData.append('main_image', form.value.main_image)
@@ -658,6 +671,8 @@ async function saveStep1() {
     steps.value[2].enabled = true
     toast.success('مرحله اول با موفقیت بروزرسانی شد!')
   } catch (e) {
+    console.log(e);
+
     if (e.response?.data?.errors) errors.value.step1 = e.response.data.errors
     toast.error('خطا در ذخیره مرحله اول')
   } finally {

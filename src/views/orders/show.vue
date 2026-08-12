@@ -8,9 +8,9 @@
             <h4 class="mb-0 text-primary">
               <i class="fas fa-shopping-bag me-2"></i>
               جزئیات سفارش
-              <span class="badge bg-primary ms-2">#{{ order.id }}</span>
+              <span class="badge bg-primary ms-2">#{{ order?.id || '---' }}</span>
             </h4>
-            <small class="text-muted">تاریخ ثبت: {{ formatDate(order.created_at) }}</small>
+            <small class="text-muted">تاریخ ثبت: {{ formatDate(order?.created_at) }}</small>
           </div>
           <div>
             <b-button variant="outline-secondary" size="sm" @click="$router.back()">
@@ -34,28 +34,28 @@
           
           <div class="info-item">
             <span class="info-label">نام مشتری</span>
-            <span class="info-value">{{ order.user?.full_name || 'نامشخص' }}</span>
+            <span class="info-value">{{ order?.user?.full_name || 'نامشخص' }}</span>
           </div>
           
-          <template v-if="order.address">
+          <template v-if="order?.address">
             <div class="info-item">
               <span class="info-label">گیرنده</span>
-              <span class="info-value">{{ order.address.receiver_name }}</span>
+              <span class="info-value">{{ order.address.receiver_name || 'نامشخص' }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">آدرس</span>
               <span class="info-value">
-                {{ order.address.province?.name }} - {{ order.address.city?.name }} - 
-                {{ order.address.address_line }}
+                {{ order.address.province?.name || '' }} - {{ order.address.city?.name || '' }} - 
+                {{ order.address.address_line || '' }}
               </span>
             </div>
             <div class="info-item">
               <span class="info-label">کدپستی</span>
-              <span class="info-value">{{ order.address.postal_code }}</span>
+              <span class="info-value">{{ order.address.postal_code || '---' }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">شماره تماس</span>
-              <span class="info-value">{{ order.address.phone }}</span>
+              <span class="info-value">{{ order.address.phone || '---' }}</span>
             </div>
           </template>
           
@@ -63,14 +63,14 @@
             <span class="info-label">روش حمل</span>
             <span class="info-value">
               <i class="fas fa-truck me-1"></i>
-              {{ order.shipping?.title || 'نامشخص' }}
+              {{ order?.shipping?.title || 'نامشخص' }}
             </span>
           </div>
           <div class="info-item">
             <span class="info-label">روش پرداخت</span>
             <span class="info-value">
               <i class="fas fa-credit-card me-1"></i>
-              {{ paymentMethods[order.payment_method] || 'نامشخص' }}
+              {{ paymentMethods[order?.payment_method] || 'نامشخص' }}
             </span>
           </div>
         </b-card>
@@ -88,10 +88,10 @@
 
           <div class="info-item">
             <span class="info-label">جمع جزء</span>
-            <span class="info-value">{{ formatPrice(order.subtotal) }}</span>
+            <span class="info-value">{{ formatPrice(order?.subtotal) }}</span>
           </div>
           
-          <div v-if="order.discount_amount > 0" class="info-item text-success">
+          <div v-if="order?.discount_amount > 0" class="info-item text-success">
             <span class="info-label">
               <i class="fas fa-tag me-1"></i> تخفیف
             </span>
@@ -100,28 +100,28 @@
           
           <div class="info-item">
             <span class="info-label">هزینه ارسال</span>
-            <span class="info-value">{{ formatPrice(order.shipping_cost) }}</span>
+            <span class="info-value">{{ formatPrice(order?.shipping_cost) }}</span>
           </div>
 
           <hr class="my-2">
 
           <div class="info-item total-item">
             <span class="info-label fw-bold">جمع کل</span>
-            <span class="info-value total-price">{{ formatPrice(order.total) }}</span>
+            <span class="info-value total-price">{{ formatPrice(order?.total) }}</span>
           </div>
 
           <!-- جمع کل با احتساب سفارش‌های فرزند -->
-          <div v-if="order.child_orders?.length" class="info-item child-total">
+          <div v-if="order?.child_orders?.length" class="info-item child-total">
             <span class="info-label text-muted">+ سفارش‌های مرتبط</span>
             <span class="info-value text-muted">{{ formatPrice(childOrdersTotal) }}</span>
           </div>
 
-          <div v-if="order.child_orders?.length" class="info-item grand-total">
+          <div v-if="order?.child_orders?.length" class="info-item grand-total">
             <span class="info-label fw-bold">جمع نهایی</span>
             <span class="info-value grand-total-price">{{ formatPrice(grandTotal) }}</span>
           </div>
 
-          <div v-if="order.child_orders?.length" class="text-muted small mt-2">
+          <div v-if="order?.child_orders?.length" class="text-muted small mt-2">
             <i class="fas fa-info-circle me-1"></i>
             شامل {{ order.child_orders.length }} سفارش مرتبط
           </div>
@@ -143,13 +143,13 @@
               id="order-status" 
               v-model="order.status" 
               :options="orderStatusOptions"
-              :class="getStatusClass(order.status)"
+              :class="getStatusClass(order?.status)"
             />
           </b-form-group>
 
-          <div v-if="order.status == 'reserved'" class="alert alert-info mt-2">
+          <div v-if="order?.status == 'reserved'" class="alert alert-info mt-2">
             <i class="fas fa-clock me-1"></i>
-            تاریخ اتمام رزرو: {{ formatDate(order.reserved_until) }}
+            تاریخ اتمام رزرو: {{ formatDate(order?.reserved_until) }}
           </div>
 
           <b-form-group label="وضعیت پرداخت" label-for="payment-status" class="mt-3">
@@ -158,7 +158,7 @@
               disabled 
               v-model="order.payment_status"
               :options="paymentStatusOptions"
-              :class="getPaymentStatusClass(order.payment_status)"
+              :class="getPaymentStatusClass(order?.payment_status)"
             />
           </b-form-group>
 
@@ -167,7 +167,7 @@
             block 
             class="mt-3"
             @click="updateOrder"
-            :disabled="updating"
+            :disabled="updating || !order?.id"
           >
             <i v-if="updating" class="fas fa-spinner fa-spin me-1"></i>
             <i v-else class="fas fa-save me-1"></i>
@@ -198,7 +198,7 @@
                 <span class="fw-bold">آیتم‌های سفارش</span>
                 <span class="badge bg-secondary ms-2">{{ totalItems }} آیتم</span>
               </div>
-              <div v-if="order.child_orders?.length" class="text-muted small">
+              <div v-if="order?.child_orders?.length" class="text-muted small">
                 <i class="fas fa-copy me-1"></i>
                 شامل {{ order.child_orders.length }} سفارش فرزند
               </div>
@@ -219,7 +219,7 @@
               </thead>
               <tbody>
                 <!-- آیتم‌های سفارش اصلی -->
-                <tr v-for="(item, index) in order.items" :key="item.id" class="main-item">
+                <tr v-for="(item, index) in order?.items || []" :key="item.id" class="main-item">
                   <td>{{ index + 1 }}</td>
                   <td>
                     <img 
@@ -241,7 +241,7 @@
                 </tr>
 
                 <!-- آیتم‌های سفارش‌های فرزند -->
-                <template v-for="(childOrder, childIndex) in order.child_orders" :key="childOrder.id">
+                <template v-for="(childOrder, childIndex) in order?.child_orders || []" :key="childOrder.id">
                   <tr class="child-header">
                     <td colspan="6" class="bg-light text-primary">
                       <i class="fas fa-copy me-1"></i>
@@ -256,7 +256,7 @@
                     </td>
                   </tr>
                   <tr 
-                    v-for="(item, itemIndex) in childOrder.items" 
+                    v-for="(item, itemIndex) in childOrder?.items || []" 
                     :key="item.id"
                     class="child-item"
                   >
@@ -290,7 +290,7 @@
                 </template>
 
                 <!-- ردیف جمع کل -->
-                <tr class="table-success fw-bold">
+                <tr v-if="order?.items?.length || order?.child_orders?.length" class="table-success fw-bold">
                   <td colspan="5" class="text-end">جمع کل سفارشات</td>
                   <td>{{ formatPrice(grandTotal) }}</td>
                 </tr>
@@ -299,7 +299,7 @@
           </div>
 
           <!-- خلاصه سریع سفارش‌های فرزند -->
-          <div v-if="order.child_orders?.length" class="mt-3 p-3 bg-light rounded">
+          <div v-if="order?.child_orders?.length" class="mt-3 p-3 bg-light rounded">
             <div class="d-flex flex-wrap gap-3">
               <div v-for="child in order.child_orders" :key="child.id" class="child-order-summary">
                 <span class="fw-bold">سفارش #{{ child.id }}</span>
@@ -307,7 +307,7 @@
                   {{ getStatusText(child.status) }}
                 </span>
                 <span class="text-muted ms-2">
-                  {{ child.items?.length || 0 }} آیتم
+                  {{ child?.items?.length || 0 }} آیتم
                 </span>
                 <span class="fw-bold text-primary ms-2">
                   {{ formatPrice(child.total) }}
@@ -334,28 +334,34 @@ const checkPermission = store.checkPermission
 const route = useRoute()
 const router = useRouter()
 
-const order = ref({ items: [], child_orders: [] })
+const order = ref({ 
+  items: [], 
+  child_orders: [],
+  user: {},
+  address: {},
+  shipping: {}
+})
 const updating = ref(false)
 const baseImageAddress = ''
 
 // محاسبه جمع سفارش‌های فرزند
 const childOrdersTotal = computed(() => {
-  if (!order.value.child_orders?.length) return 0
-  return order.value.child_orders.reduce((sum, child) => sum + (child.total || 0), 0)
+  if (!order.value?.child_orders?.length) return 0
+  return order.value.child_orders.reduce((sum, child) => sum + (child?.total || 0), 0)
 })
 
 // محاسبه جمع نهایی
 const grandTotal = computed(() => {
-  const mainTotal = order.value.total || 0
+  const mainTotal = order.value?.total || 0
   return mainTotal + childOrdersTotal.value
 })
 
 // تعداد کل آیتم‌ها
 const totalItems = computed(() => {
-  let count = order.value.items?.length || 0
-  if (order.value.child_orders?.length) {
+  let count = order.value?.items?.length || 0
+  if (order.value?.child_orders?.length) {
     order.value.child_orders.forEach(child => {
-      count += child.items?.length || 0
+      count += child?.items?.length || 0
     })
   }
   return count
@@ -387,13 +393,27 @@ const paymentStatusOptions = [
 const fetchOrder = async () => {
   try {
     const res = await axios.get(`/orders/${route.params.id}`)
-    order.value = res.data.data.order
+    order.value = res.data.data ||{}
+    
+    // اگر آیتم‌ها یا child_orders وجود نداشت، آرایه خالی بذار
+    if (!order.value.items) order.value.items = []
+    if (!order.value.child_orders) order.value.child_orders = []
+    if (!order.value.user) order.value.user = {}
+    if (!order.value.address) order.value.address = {}
+    if (!order.value.shipping) order.value.shipping = {}
+    
   } catch (e) {
     toast.error("خطا در گرفتن اطلاعات سفارش")
+    console.error(e)
   }
 }
 
 const updateOrder = async () => {
+  if (!order.value?.id) {
+    toast.error("شناسه سفارش نامعتبر")
+    return
+  }
+  
   updating.value = true
   try {
     let fd = new FormData()
@@ -402,6 +422,7 @@ const updateOrder = async () => {
     toast.success("سفارش با موفقیت بروزرسانی شد")
   } catch (e) {
     toast.error("خطا در بروزرسانی سفارش")
+    console.error(e)
   } finally {
     updating.value = false
   }
@@ -417,7 +438,7 @@ const getStatusText = (status) => {
     canceled: 'لغو شده',
     returned: 'مرجوع شده'
   }
-  return map[status] || status
+  return map[status] || status || 'نامشخص'
 }
 
 const getStatusClass = (status) => {
@@ -440,7 +461,7 @@ const getPaymentStatusText = (status) => {
     failed: 'ناموفق',
     refunded: 'برگشت داده شده'
   }
-  return map[status] || status
+  return map[status] || status || 'نامشخص'
 }
 
 const getPaymentStatusClass = (status) => {
@@ -474,7 +495,8 @@ const formatPrice = (val) => {
 }
 
 const getProductTitle = (item) => {
-  let title = item.product?.title || 'نامشخص'
+  if (!item?.product) return 'نامشخص'
+  let title = item.product.title || 'نامشخص'
   if (item.variant?.values?.length) {
     title += ` [${item.variant.values.map(v => decodeURIComponent(v.value)).join(' - ')}]`
   }
@@ -482,7 +504,7 @@ const getProductTitle = (item) => {
 }
 
 const getVariantText = (item) => {
-  if (!item.variant?.values?.length) return ''
+  if (!item?.variant?.values?.length) return ''
   return item.variant.values
     .map(v => {
       const name = v.attribute_id === 1 ? 'سایز' : v.attribute_id === 2 ? 'رنگ' : 'ویژگی'
@@ -492,7 +514,7 @@ const getVariantText = (item) => {
 }
 
 const getProductImage = (item) => {
-  if (!item.product) return ''
+  if (!item?.product) return ''
   if (item.product.main_image && item.product.main_image.includes('http'))
     return item.product.main_image
   return baseImageAddress + item.product.main_image
