@@ -757,8 +757,8 @@ async function saveStep2() {
     formData.append(`variants[${index}][price]`, v.price || 0)
     formData.append(`variants[${index}][stock]`, v.stock ?? 0)
     formData.append(`variants[${index}][discount_value]`, v.discount_value ?? 0)
-    formData.append(`variants[${index}][discount_start_at]`, v.discount_start_at ?? 0)
-    formData.append(`variants[${index}][discount_end_at]`, v.discount_end_at ?? 0)
+    formData.append(`variants[${index}][discount_start_at]`, v.discount_start_at ?? '')
+    formData.append(`variants[${index}][discount_end_at]`, v.discount_end_at ?? '')
     formData.append(`variants[${index}][discount_type]`, v.discount_type ?? 0)
     v.values.forEach((AV) => {
       if (AV && AV.id) formData.append(`variants[${index}][values][]`, AV.id)
