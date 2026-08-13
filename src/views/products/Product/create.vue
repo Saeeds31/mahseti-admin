@@ -82,9 +82,23 @@
                 accept=".jpg,.png,.webp" theme="grid" deletable sortable />
               <span v-if="errors.step1.images" class="text-danger">{{ errors.step1.images[0] }}</span>
             </div>
+
+            <div class="col-md-12 mb-3">
+              <label class="form-label">ویدئو</label>
+              <VueFileAgent @select="videoLoaded" @beforedelete="videoRemoved" :maxFiles="1" accept=".mp4,.mov,.avi"
+                theme="grid" deletable sortable />
+              <span v-if="errors.step1.video" class="text-danger">{{ errors.step1.video[0] }}</span>
+            </div>
           </div>
 
           <div class="border-box">
+
+            <div class="col-md-12 mb-3">
+              <label class="form-label">تصویر اصلی</label>
+              <VueFileAgent @select="imageLoaded" @beforedelete="imageRemoved" :maxFiles="1" accept=".jpg,.png"
+                theme="grid" deletable sortable />
+              <span v-if="errors.step1.main_image" class="text-danger">{{ errors.step1.main_image[0] }}</span>
+            </div>
             <div class="col-md-12 mb-3">
               <label class="form-label">نوع فروش</label>
               <select v-model="form.sales_channel" class="form-select">
@@ -120,20 +134,21 @@
               <input v-model="form.discount_value" type="number" class="form-control" />
               <span v-if="errors.step1.discount_value" class="text-danger">{{ errors.step1.discount_value[0] }}</span>
             </div>
-
             <div class="col-md-12 mb-3">
-              <label class="form-label">تصویر اصلی</label>
-              <VueFileAgent @select="imageLoaded" @beforedelete="imageRemoved" :maxFiles="1" accept=".jpg,.png"
-                theme="grid" deletable sortable />
-              <span v-if="errors.step1.main_image" class="text-danger">{{ errors.step1.main_image[0] }}</span>
+              <label class="form-label">شروع تخفیف</label>
+              <date-picker display-format="jYYYY/jMM/jDD" placeholder="از تاریخ" format="YYYY-MM-DD"
+                v-model="form.discount_start_at"></date-picker>
+              <span v-if="errors.step1.discount_start_at" class="text-danger">{{ errors.step1.discount_start_at[0]
+              }}</span>
+            </div>
+            <div class="col-md-12 mb-3">
+              <label class="form-label">پایان تخفیف</label>
+              <date-picker display-format="jYYYY/jMM/jDD" placeholder="از تاریخ" format="YYYY-MM-DD"
+                v-model="form.discount_end_at"></date-picker>
+              <span v-if="errors.step1.discount_end_at" class="text-danger">{{ errors.step1.discount_end_at[0]
+              }}</span>
             </div>
 
-            <div class="col-md-12 mb-3">
-              <label class="form-label">ویدئو</label>
-              <VueFileAgent @select="videoLoaded" @beforedelete="videoRemoved" :maxFiles="1" accept=".mp4,.mov,.avi"
-                theme="grid" deletable sortable />
-              <span v-if="errors.step1.video" class="text-danger">{{ errors.step1.video[0] }}</span>
-            </div>
           </div>
         </div>
 
@@ -195,6 +210,8 @@
                 <th>SKU</th>
                 <th>قیمت</th>
                 <th>موجودی</th>
+                <th>تخفیف</th>
+                <th>زمان تخفیف</th>
               </tr>
             </thead>
             <tbody>
@@ -205,6 +222,37 @@
                 <td><input v-model="variant.sku" class="form-control" /></td>
                 <td><input v-model="variant.price" type="number" class="form-control" /></td>
                 <td><input v-model="variant.stock" type="number" class="form-control" /></td>
+                <td>
+
+                  <div class="col-md-12 mb-3">
+                    <label class="form-label">نوع تخفیف</label>
+                    <select v-model="variant.discount_type" class="form-select">
+                      <option value="">انتخاب کنید</option>
+                      <option value="percent">درصدی</option>
+                      <option value="fixed">ثابت</option>
+                    </select>
+
+                  </div>
+
+                  <div class="col-md-12 mb-3">
+                    <label class="form-label">تخفیف</label>
+                    <input v-model="variant.discount_value" type="number" class="form-control" />
+                  </div>
+                </td>
+                <td>
+
+                  <div class="col-md-12 mb-3">
+                    <label class="form-label">شروع تخفیف</label>
+                    <date-picker display-format="jYYYY/jMM/jDD" placeholder="از تاریخ" format="YYYY-MM-DD"
+                      v-model="variant.discount_start_at"></date-picker>
+
+                  </div>
+                  <div class="col-md-12 mb-3">
+                    <label class="form-label">پایان تخفیف</label>
+                    <date-picker display-format="jYYYY/jMM/jDD" placeholder="از تاریخ" format="YYYY-MM-DD"
+                      v-model="variant.discount_end_at"></date-picker>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -290,8 +338,10 @@ const form = ref({
   meta_title: '',
   meta_description: '',
   status: '',
-  sales_channel:'both',
+  sales_channel: 'both',
   discount_value: '',
+  discount_start_at: '',
+  discount_end_at: '',
   discount_type: '',
   barcode: '',
   sku: '',
@@ -415,6 +465,10 @@ async function generateCombinations() {
       return {
         id,
         sku: '',
+        discount_value: '',
+        discount_start_at: '',
+        discount_end_at: '',
+        discount_type: '',
         price: product.value ? product.value.price : '',
         stock: product.value ? product.value.stock : '',
         values: values.map((v) => ({ id: v.id, value: v.value })),
@@ -474,6 +528,10 @@ async function saveStep2() {
     formData.append(`variants[${index}][sku]`, v.sku)
     formData.append(`variants[${index}][price]`, v.price)
     formData.append(`variants[${index}][stock]`, v.stock ?? 0)
+    formData.append(`variants[${index}][discount_value]`, v.discount_value ?? 0)
+    formData.append(`variants[${index}][discount_start_at]`, v.discount_start_at ?? 0)
+    formData.append(`variants[${index}][discount_end_at]`, v.discount_end_at ?? 0)
+    formData.append(`variants[${index}][discount_type]`, v.discount_type ?? 0)
     v.values.forEach((AV) => {
       formData.append(`variants[${index}][values][]`, AV.id)
     })
