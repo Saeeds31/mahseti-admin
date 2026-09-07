@@ -1,6 +1,6 @@
 <template>
     <div class="container mt-4 orders-page" v-if="checkPermission(['order_view'])">
-   
+
         <div class="card mb-3">
             <div class="card-header d-flex justify-content-between align-items-center mb-3">
                 <h3>
@@ -13,13 +13,9 @@
                         <option value="full">پرینت کامل (جزئیات سفارش)</option>
                         <option value="label">پرینت برچسب (فرستنده و گیرنده)</option>
                     </select>
-                    
+
                     <!-- دکمه پرینت گروهی -->
-                    <button 
-                        v-if="selectedOrders.length > 0" 
-                        @click="goToPrint" 
-                        class="btn btn-success"
-                    >
+                    <button v-if="selectedOrders.length > 0" @click="goToPrint" class="btn btn-success">
                         <i class="bi bi-printer"></i>
                         پرینت ({{ selectedOrders.length }})
                     </button>
@@ -75,12 +71,8 @@
                     <thead>
                         <tr>
                             <th style="width: 50px;">
-                                <input 
-                                    type="checkbox" 
-                                    :checked="allSelected" 
-                                    @change="toggleAll"
-                                    :disabled="orders.data.length === 0"
-                                />
+                                <input type="checkbox" :checked="allSelected" @change="toggleAll"
+                                    :disabled="orders.data.length === 0" />
                             </th>
                             <th>#</th>
                             <th>کاربر</th>
@@ -90,6 +82,7 @@
                             <th>وضعیت سفارش</th>
                             <th>وضعیت پرداخت</th>
                             <th>روش پرداخت</th>
+                            <th>زمان سفارش</th>
                             <th style="width: 120px;">عملیات</th>
                         </tr>
                     </thead>
@@ -101,11 +94,7 @@
                         </tr>
                         <tr v-else v-for="order in orders.data" :key="order.id">
                             <td>
-                                <input 
-                                    type="checkbox" 
-                                    :value="order.id" 
-                                    v-model="selectedOrders"
-                                />
+                                <input type="checkbox" :value="order.id" v-model="selectedOrders" />
                             </td>
                             <td>{{ order.id }}</td>
                             <td>{{ order.user?.full_name ?? "-" }}</td>
@@ -123,6 +112,8 @@
                                 </span>
                             </td>
                             <td>{{ paymentMethodText(order.payment_method) }}</td>
+                            <td>{{ new Date(order.created_at).toLocaleDateString('fa') }}</td>
+
                             <td>
                                 <router-link :to="`/orders/${order.id}`" class="btn btn-sm btn-info">
                                     <i class="bi bi-eye"></i>
@@ -171,8 +162,8 @@ const filters = ref({
 const currentPage = ref(1);
 
 const allSelected = computed(() => {
-    return orders.value.data.length > 0 && 
-           orders.value.data.every(order => selectedOrders.value.includes(order.id));
+    return orders.value.data.length > 0 &&
+        orders.value.data.every(order => selectedOrders.value.includes(order.id));
 });
 
 const toggleAll = (event) => {
@@ -191,7 +182,7 @@ const goToPrint = () => {
     }
     router.push({
         path: '/orders/print',
-        query: { 
+        query: {
             ids: selectedOrders.value.join(','),
             type: printType.value // ارسال نوع پرینت
         }
@@ -202,7 +193,7 @@ const goToPrint = () => {
 const singlePrint = (orderId) => {
     router.push({
         path: '/orders/print',
-        query: { 
+        query: {
             ids: orderId.toString(),
             type: printType.value // ارسال نوع پرینت
         }

@@ -231,6 +231,13 @@ const menuItems = ref([
         link: "/reports/products",
         icon: "bi-box2"
       },
+      
+      {
+        name: "تنوع ها",
+        permissions: ['report_products'],
+        link: "/reports/variant",
+        icon: "bi-box2"
+      },
     ],
   },
   {
@@ -277,17 +284,12 @@ const menuItems = ref([
     icon: "bi-chat-dots",
     children: [
       {
-        name: "محصولات",
-        permissions: ['comment_product'],
-        link: "/comments/products",
+        name: "لیست",
+        permissions: ['comment_products'],
+        link: "/comments/list",
         icon: "bi-bag"
       },
-      {
-        name: "مقالات",
-        permissions: ['comment_blogs'],
-        link: "/comments/articles",
-        icon: "bi-journal"
-      },
+      
     ],
   },
 

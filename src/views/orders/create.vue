@@ -3,11 +3,9 @@
         <div class="row">
             <!-- ستون اصلی -->
             <div class="col-md-8 bg-gray">
-                <h3 class=" p-2">
+                <h3 class="p-2">
                     <i class="bi bi-plus"></i>
-                    <span>
-                        ثبت سفارش جدید
-                    </span>
+                    <span>ثبت سفارش جدید</span>
                 </h3>
                 <form @submit.prevent="submitOrder" class="row g-3">
                     <!-- انتخاب کاربر -->
@@ -16,29 +14,36 @@
                         <multiselect @search-change="loadUsers" v-model="selectedUser" placeholder="انتخاب کاربر"
                             open-direction="bottom" :options="userOptions" label="label" track-by="id"
                             :searchable="true" :multiple="false" :close-on-select="true" :show-labels="false">
-                            <template slot="noOptions">
-                                جستجو کنید
-                            </template>
+                            <template slot="noOptions">جستجو کنید</template>
                             <template slot="noResult">
                                 <span v-if="isRequesting" v-text="'در حال جستجو...'" />
                                 <span v-else v-text="'موردی یافت نشد'"></span>
                             </template>
                         </multiselect>
                     </div>
+
                     <!-- انتخاب آدرس -->
-                    <div class="col-12" v-if="addresses.length">
+                    <div class="col-12" v-if="addresses.length && !form.parent_order">
                         <label class="form-label">آدرس</label>
                         <Treeselect v-model="selectedAddress" :multiple="false" :options="addresses"
                             placeholder="انتخاب آدرس..." />
                     </div>
+
+                    <!-- افزودن به سفارش رزرو -->
                     <div v-if="reservedOrders.length" class="d-flex flex-column gap-2">
                         <label for="">افزودن به سفارش رزرو:</label>
                         <select v-model="form.parent_order" class="form-control" id="">
+                            <option value="">سفارش عادی</option>
                             <option v-for="(item, index) in reservedOrders" :key="index" :value="item">
-                                {{ `ارسال به ${item.receiver_name} با ${item.shipping_method}` }}
+                                {{ `سفارش #${item.order_number} - ارسال به ${item.receiver_name} با
+                                ${item.shipping_method}` }}
                             </option>
                         </select>
+                        <small class="text-muted" v-if="form.parent_order">
+                            هزینه حمل سفارش رزرو قبلاً پرداخت شده است
+                        </small>
                     </div>
+
                     <!-- افزودن محصول -->
                     <div class="col-12">
                         <label class="form-label">افزودن محصول</label>
@@ -47,17 +52,15 @@
                                 placeholder="انتخاب محصول" open-direction="bottom" :options="productOptions"
                                 label="title" track-by="id" :searchable="true" :multiple="false" :close-on-select="true"
                                 :show-labels="false">
-                                <template slot="noOptions">
-                                    جستجو کنید
-                                </template>
+                                <template slot="noOptions">جستجو کنید</template>
                                 <template slot="noResult">
                                     <span v-if="isRequesting" v-text="'در حال جستجو...'" />
                                     <span v-else v-text="'موردی یافت نشد'"></span>
                                 </template>
                             </multiselect>
-                            <input v-model.number="selectedQuantity" type="number" min="1" class="form-control "
+                            <input v-model.number="selectedQuantity" type="number" min="1" class="form-control"
                                 placeholder="تعداد" />
-                            <button type="button" class="btn btn-success " @click="addProduct">افزودن</button>
+                            <button type="button" class="btn btn-success" @click="addProduct">افزودن</button>
                         </div>
                     </div>
 
@@ -81,21 +84,30 @@
                     <template v-if="!form.parent_order">
                         <div v-if="form.items.length" class="col-12">
                             <label class="form-label">روش حمل و نقل</label>
-                            <Treeselect :normalizer="shippingNormalizer" v-if="shippings.length" :valueFormat="'object'"
+                            <div v-if="shippingLoading" class="text-muted">در حال محاسبه...</div>
+                            <Treeselect v-else-if="shippings.length" :normalizer="shippingNormalizer"
                                 v-model="form.shipping_method" :multiple="false" :options="shippings"
-                                placeholder="انتخاب روش حمل..." />
+                                placeholder="انتخاب روش حمل..." :valueFormat="'object'" />
+                            <div v-else-if="!shippingLoading" class="text-warning">
+                                روش حمل مناسبی یافت نشد
+                            </div>
                         </div>
                     </template>
-
+                    <template v-else>
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                روش حمل از سفارش رزرو استفاده می‌شود و هزینه آن قبلاً پرداخت شده است
+                            </div>
+                        </div>
+                    </template>
                 </form>
             </div>
 
             <!-- ستون جمع سفارش -->
-            <div class="col-md-4 ">
-
+            <div class="col-md-4">
                 <div class="card">
-
-                    <div v-if="!form.parent_order" class="d-flex flex-column gap-2">
+                    <div v-if="!form.parent_order" class="d-flex flex-column gap-2 p-3">
                         <label for="">نوع سفارش:</label>
                         <select v-model="form.reservation_type" class="form-control" id="">
                             <option value="">عادی</option>
@@ -104,24 +116,22 @@
                         </select>
                     </div>
                     <div class="card-header">
-                        <h3>
-                            <span>
-                                جمع سفارش
-                            </span>
-                        </h3>
+                        <h3><span>جمع سفارش</span></h3>
                     </div>
                     <div class="card-body">
-
                         <p v-if="wallet">موجودی کیف پول: <strong>{{ wallet.balance.toLocaleString() }} تومان</strong>
                         </p>
                         <p>جمع محصولات: <strong>{{ subtotal.toLocaleString() }} تومان</strong></p>
-                        <p>هزینه حمل: <strong>{{ shippingCost.toLocaleString() }} تومان</strong></p>
-                        <p>تخفیف: <input type="number" class="form-control" v-model="discount_amount"></p>
-
+                        <p v-if="form.parent_order">
+                            هزینه حمل: <strong class="text-success">رایگان (پوشش توسط رزرو)</strong>
+                        </p>
+                        <p v-else>
+                            هزینه حمل: <strong>{{ shippingCost.toLocaleString() }} تومان</strong>
+                        </p>
+                        <p>تخفیف: <input type="number" class="form-control" v-model="discount_amount" min="0"></p>
                         <hr />
                         <h5>مبلغ نهایی: <strong>{{ total.toLocaleString() }} تومان</strong></h5>
                     </div>
-
                     <div class="card-footer">
                         <button class="btn btn-primary w-100" @click="submitOrder" :disabled="loading">
                             {{ loading ? 'در حال ثبت...' : 'ثبت سفارش' }}
@@ -141,8 +151,10 @@ import 'vue3-toastify/dist/index.css'
 import Treeselect from 'vue3-treeselect'
 import 'vue3-treeselect/dist/vue3-treeselect.css'
 import { useAdmin } from '@/stores/modules/admin';
+
 const store = useAdmin();
 const checkPermission = store.checkPermission;
+
 const form = ref({
     user_id: null,
     address_id: null,
@@ -150,97 +162,59 @@ const form = ref({
     reservation_type: '',
     parent_order: '',
     items: []
-})
-let sumQuantity = computed(() => {
-    return form.value.items.reduce((accumulator, item) => {
-        return accumulator + item.quantity
-    }, 0);
-})
-let subTotal = computed(() => {
-    return form.value.items.reduce((accumulator, item) => {
-        return accumulator + (item.price * item.quantity)
-    }, 0);
-})
+});
 
 let discount_amount = ref(0);
 let selectedAddress = ref(null);
-const addresses = ref([])
-const selectedProduct = ref(null)
-const selectedQuantity = ref(1)
-const shippingCost = ref(0)
-const loading = ref(false)
+const addresses = ref([]);
+const selectedProduct = ref(null);
+const selectedQuantity = ref(1);
+const shippingCost = ref(0);
+const loading = ref(false);
+const shippingLoading = ref(false);
 let userOptions = ref([]);
 let productOptions = ref([]);
 let shippings = ref([]);
 let selectedUser = ref(null);
 let wallet = ref(null);
-let reservation_type = ref("");
-watch(() => selectedUser.value, (newUser) => {
-    if (newUser) {
-        fetchAddresses(newUser.addresses);
-        wallet.value = newUser.wallet;
-    } else {
-        addresses.value = [];
-        wallet.value = null;
-    }
-})
-watch(() => selectedAddress.value, (newAddress) => {
-    if (newAddress) {
-        showAvalibleShipping()
-        showAvalibleReservedOrder()
-    } else {
-        shippings.value = [];
-    }
-})
-// محصولات انتخاب شده → محاسبه جمع
+let reservedOrders = ref([]);
+let reservationCost = ref(0);
+
+// محاسبه جمع
 const subtotal = computed(() =>
     form.value.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-)
+);
 
-const total = computed(() => subtotal.value + shippingCost.value - discount_amount.value)
+const total = computed(() => {
+    let cost = form.value.parent_order ? 0 : shippingCost.value;
+    return subtotal.value + cost - discount_amount.value;
+});
+
+// ابورت کنترلرها
 let abortController = null;
+let abortController1 = null;
+
 // لود کاربران
 const loadUsers = async (search) => {
     if (abortController) {
         abortController.abort();
     }
-
     abortController = new AbortController();
-
     const { data } = await axios.get('/users', {
         params: { search },
         signal: abortController.signal,
-
-    })
-    userOptions.value = data.data.map(u => ({ id: u.id, label: u.full_name, addresses: u.addresses, wallet: u.wallet }));
-}
-async function showAvalibleShipping() {
-    shippings.value = [];
-    form.value.shipping_method = null;
-    const { data } = await axios.get(`shippings/avalible-shipping`, {
-        params: {
-            addressId: selectedAddress.value,
-            subTotal: subTotal.value,
-            quantity: sumQuantity.value,
-        }
     });
-    shippings.value = data.data
-}
-// گرفتن آدرس‌های کاربر انتخاب شده
-const fetchAddresses = async (asses) => {
-    addresses.value = asses.map(a => ({ id: a.id, label: `${a.receiver_name} - ${a.address_line} - ${a.phone} ` }))
-}
+    userOptions.value = data.data.map(u => ({
+        id: u.id,
+        label: u.full_name,
+        addresses: u.addresses,
+        wallet: u.wallet
+    }));
+};
 
-const shippingNormalizer = (node) => {
-    return {
-        id: node.id,
-        label: node.name,
-    }
-}
-let abortController1 = null;
-
+// لود محصولات
 const loadProducts = async (search) => {
-    if (!search && search.length < 2) return;
+    if (!search || search.length < 2) return;
     if (abortController1) {
         abortController1.abort();
     }
@@ -248,45 +222,163 @@ const loadProducts = async (search) => {
     const { data } = await axios.get('/products', {
         params: { search },
         signal: abortController1.signal,
-    })
+    });
     productOptions.value = await convertToSelectableProduct(data.data);
-}
+};
 
 async function convertToSelectableProduct(productList) {
     let finalList = [];
     productList.forEach(product => {
-        // اگر بیشتر از یک تنوع پایه داشته باشه
         if (product.variants.length > 1) {
             product.variants.forEach((variant) => {
                 let obj = {
                     id: variant.id,
                     product_id: product.id,
                     price: variant.price,
-                    title: `${variant.id} - ${product.title} || ${variant.values.map((att) => { return att.value }).join("-")} || موجودی :${variant.stock}`,
+                    title: `${variant.id} - ${product.title} || ${variant.values.map((att) => att.value).join("-")} || موجودی: ${variant.stock}`,
                     isDisabled: variant.stock > 0 ? false : true
-                }
+                };
                 finalList.push(obj);
             });
         } else {
-            let obj = {};
-            obj.isDisabled = product.variants[0].stock > 0 ? false : true;
-            obj.id = product.variants[0].id;
-            obj.title = product.variants[0].id + " - " + product.title;
-            obj.price = product.price;
-            obj.product_id = product.id;
+            let obj = {
+                isDisabled: product.variants[0].stock > 0 ? false : true,
+                id: product.variants[0].id,
+                title: product.variants[0].id + " - " + product.title,
+                price: product.price,
+                product_id: product.id
+            };
             finalList.push(obj);
         }
     });
-
     return finalList;
 }
-// افزودن محصول به سفارش
+
+// واچ برای تغییر کاربر
+watch(() => selectedUser.value, async (newUser) => {
+    if (newUser) {
+        fetchAddresses(newUser.addresses);
+        wallet.value = newUser.wallet;
+        await loadReservedOrders(newUser.id);
+    } else {
+        addresses.value = [];
+        wallet.value = null;
+        reservedOrders.value = [];
+    }
+});
+
+// واچ برای تغییر آدرس
+watch(() => selectedAddress.value, async (newAddress) => {
+    if (newAddress) {
+        await calculateShipping();
+    } else {
+        shippings.value = [];
+        shippingCost.value = 0;
+    }
+});
+
+// واچ برای تغییر سفارش والد
+watch(() => form.value.parent_order, async (val) => {
+    if (val) {
+        // اگر سفارش رزرو انتخاب شده، هزینه حمل صفر می‌شود
+        shippingCost.value = 0;
+        form.value.shipping_method = null;
+        shippings.value = [];
+
+        // نمایش پیام
+        toast.info('هزینه حمل با سفارش رزرو پوشش داده می‌شود');
+    } else {
+        // اگر انتخاب رزرو برداشته شد، دوباره محاسبه کن
+        await calculateShipping();
+    }
+});
+
+// دریافت آدرس‌های کاربر
+const fetchAddresses = (asses) => {
+    addresses.value = asses.map(a => ({
+        id: a.id,
+        label: `${a.receiver_name} - ${a.address_line} - ${a.phone}`
+    }));
+};
+
+// دریافت سفارش‌های رزرو شده کاربر
+const loadReservedOrders = async (userId) => {
+    try {
+        const { data } = await axios.get('/user-reservations', {
+            params: { user_id: userId }
+        });
+        reservedOrders.value = data.data || [];
+    } catch (error) {
+        console.error('Error loading reservations:', error);
+        reservedOrders.value = [];
+    }
+};
+
+// محاسبه روش‌های حمل و نقل
+const calculateShipping = async () => {
+    if (!selectedAddress.value || !form.value.items.length) {
+        shippings.value = [];
+        shippingCost.value = 0;
+        return;
+    }
+
+    shippingLoading.value = true;
+    try {
+        const params = {
+            address_id: selectedAddress.value,
+            subtotal: subtotal.value,
+            quantity: form.value.items.reduce((sum, item) => sum + item.quantity, 0),
+        };
+
+        // اگر سفارش رزرو وجود دارد
+        if (form.value.parent_order) {
+            params.reservation_order_id = form.value.parent_order.order_number;
+        }
+
+        const { data } = await axios.post('/calculate-shipping-with-reservation', params);
+
+        if (data.success) {
+            shippings.value = data.data || [];
+
+            if (data.has_reservation && data.reservation_method_invalid) {
+                toast.warning('روش حمل سفارش رزرو شما معتبر نیست، لطفاً روش دیگری را انتخاب کنید');
+            }
+
+            // اگر یک روش خاص برای رزرو برگردانده شده
+            if (data.data && data.data.length === 1 && data.data[0].is_reservation_method) {
+                shippings.value = data.data;
+                shippingCost.value = 0;
+                // انتخاب خودکار روش رزرو
+                form.value.shipping_method = data.data[0];
+                toast.info('روش حمل سفارش رزرو شما');
+            } else if (data.data && data.data.length > 0) {
+                // انتخاب اولین روش به صورت پیش‌فرض
+                form.value.shipping_method = data.data[0];
+                shippingCost.value = data.data[0].cost || 0;
+            }
+        }
+    } catch (error) {
+        console.error('Error calculating shipping:', error);
+        toast.error('خطا در محاسبه هزینه حمل');
+    } finally {
+        shippingLoading.value = false;
+    }
+};
+
+const shippingNormalizer = (node) => {
+    return {
+        id: node.id,
+        label: node.name + (node.cost !== undefined ? ` (${node.cost.toLocaleString()} تومان)` : ''),
+    };
+};
+
+// افزودن محصول
 const addProduct = () => {
     if (!selectedProduct.value || selectedQuantity.value < 1) {
-        return toast.error('لطفاً محصول و تعداد را انتخاب کنید')
+        return toast.error('لطفاً محصول و تعداد را انتخاب کنید');
     }
-    const product = selectedProduct.value
-    let findedIndex = form.value.items.findIndex(item => item.id == product.id)
+    const product = selectedProduct.value;
+    let findedIndex = form.value.items.findIndex(item => item.id == product.id);
     if (findedIndex != -1) {
         form.value.items[findedIndex].quantity += selectedQuantity.value;
     } else {
@@ -296,93 +388,103 @@ const addProduct = () => {
             title: product.title,
             price: product.price,
             quantity: selectedQuantity.value
-        })
+        });
     }
     selectedQuantity.value = 1;
-    showAvalibleShipping();
-    showAvalibleReservedOrder();
-}
-let reservedOrders = ref([]);
-// 
-async function showAvalibleReservedOrder() {
-    if (!selectedUser.value) return;
-    reservedOrders.value = [];
-    form.value.parent_order = "";
-    form.value.shipping_method = null;
-    let fd = new FormData();
-    fd.append('user_id', selectedUser.value.id)
-    fd.append('address_id', selectedAddress.value)
-    const { data } = await axios.post(`active-reservations`, fd);
-    reservedOrders.value = data.data.reservations
+    calculateShipping();
+};
 
-}
 // حذف محصول
 const removeProduct = (index) => {
-    form.value.items.splice(index, 1)
-}
-// وقتی روش حمل انتخاب شد → هزینه اضافه شود
-watch(() => form.value.shipping_method, async (val) => {
-    if (!val || !selectedAddress.value) {
-        return
+    form.value.items.splice(index, 1);
+    calculateShipping();
+};
+
+// واچ برای تغییر روش حمل
+watch(() => form.value.shipping_method, (val) => {
+    if (val && !form.value.parent_order) {
+        shippingCost.value = val.cost || 0;
     }
-    shippingCost.value = val.cost
-})
-watch(() => form.value.parent_order, async (val) => {
-    shippingCost.value = 0;
-})
+});
+
+// واچ برای تغییر نوع رزرو
+watch(() => form.value.reservation_type, () => {
+    // نیازی به محاسبه مجدد نیست
+});
 
 // ثبت سفارش
 const submitOrder = async () => {
-    if (!selectedUser.value || !selectedAddress.value || !form.value.items.length && (!form.value.shipping_method || form.value.parent_order)) {
-        return toast.error('لطفاً همه فیلدها را پر کنید')
+    if (!selectedUser.value) {
+        return toast.error('لطفاً کاربر را انتخاب کنید');
     }
+    if (!selectedAddress.value) {
+        return toast.error('لطفاً آدرس را انتخاب کنید');
+    }
+    if (!form.value.items.length) {
+        return toast.error('لطفاً حداقل یک محصول اضافه کنید');
+    }
+    if (!form.value.parent_order && !form.value.shipping_method) {
+        return toast.error('لطفاً روش حمل را انتخاب کنید');
+    }
+
     loading.value = true;
-    let nullProduct = null;
-    let items = form.value.items;
-    for (let i = 0; i < items.length; i++) {
-        if (isNaN(items[i].id)) {
-            nullProduct = items[i];
-            break;
-        }
-    }
-    if (nullProduct) {
-        loading.value = false
-        return toast.error(`محصول ${nullProduct.title}دارای تنوع است لطفا یکی از تنوع های آن را انتخاب کنید`)
-    }
     try {
         let formData = new FormData();
-        formData.append("user_id", selectedUser.value.id)
-        formData.append("address_id", selectedAddress.value)
-        formData.append("shipping_id", form.value.parent_order ? form.value.parent_order.shipping_id : form.value.shipping_method?.id)
-        formData.append("subtotal", subtotal.value)
-        formData.append("discount_amount", discount_amount.value)
-        formData.append("shipping_cost", form.value.parent_order ? 0 : shippingCost.value)
+        formData.append("user_id", selectedUser.value.id);
+        formData.append("address_id", selectedAddress.value);
+        formData.append("subtotal", subtotal.value);
+        formData.append("discount_amount", discount_amount.value || 0);
+
+        // اگر سفارش رزرو باشد
         if (form.value.parent_order) {
-            formData.append("parent_order_id", form.value.parent_order.order_number)
-        } else if (form.value.reservation_type) {
-            formData.append("reservation_type", form.value.reservation_type)
+            formData.append("parent_order_id", form.value.parent_order.order_number);
+            formData.append("shipping_id", form.value.parent_order.shipping_id);
+            formData.append("shipping_cost", 0);
+        } else {
+            formData.append("shipping_id", form.value.shipping_method.id);
+            formData.append("shipping_cost", shippingCost.value);
+            if (form.value.reservation_type) {
+                formData.append("reservation_type", form.value.reservation_type);
+            }
         }
-        formData.append("total", total.value)
+
+        formData.append("total", total.value);
+
         form.value.items.forEach((item, index) => {
             formData.append(`items[${index}][product_id]`, item.product_id);
             formData.append(`items[${index}][product_variant_id]`, item.id);
             formData.append(`items[${index}][quantity]`, item.quantity);
             formData.append(`items[${index}][price]`, item.price);
-        })
-        await axios.post('/orders-create-by-admin', formData)
-        toast.success('سفارش با موفقیت ثبت شد')
-        form.value = { user_id: null, address_id: null, shipping_method: null, items: [] }
-        addresses.value = []
+        });
+
+        const response = await axios.post('/orders-create-by-admin', formData);
+
+        toast.success('سفارش با موفقیت ثبت شد');
+
+        // ریست کردن فرم
+        form.value = {
+            user_id: null,
+            address_id: null,
+            shipping_method: null,
+            reservation_type: '',
+            parent_order: '',
+            items: []
+        };
+        addresses.value = [];
         shippingCost.value = 0;
         wallet.value = null;
         selectedUser.value = null;
-    } catch (e) {
-        console.log(e);
-        toast.error(e.response.data.message)
+        selectedAddress.value = null;
+        reservedOrders.value = [];
+        discount_amount.value = 0;
+
+    } catch (error) {
+        console.error('Error submitting order:', error);
+        toast.error(error.response?.data?.message || 'خطا در ثبت سفارش');
     } finally {
-        loading.value = false
+        loading.value = false;
     }
-}
+};
 </script>
 
 <style scoped>
@@ -394,5 +496,6 @@ const submitOrder = async () => {
 .selectProduct {
     display: grid;
     grid-template-columns: 10fr 1fr 2fr;
+    gap: 8px;
 }
 </style>

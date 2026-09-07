@@ -1,9 +1,10 @@
 <template>
   <div class="product-edit container py-4" v-if="checkPermission(['product_update'])">
     <!-- دکمه‌های مرحله‌ای -->
-    <div class="step-buttons d-flex flex-wrap align-items-center mb-4">
+    <div class="step-buttons d-flex flex-wrap align-items-center justify-content-center mb-4">
       <template v-for="(step, index) in steps" :key="index">
-        <button class="btn btn-primary d-flex align-items-end me-2 mb-2 step-btn"
+
+        <button class="btn btn-primary d-flex align-items-end me-2 mb-2  steper"
           :class="{ active: currentStep === index }" :disabled="!step.enabled" @click="currentStep = index">
           <i :class="step.icon" class="me-1"></i>
           {{ step.label }}
@@ -134,6 +135,13 @@
                     <option value="unavailable">ناموجود</option>
                   </select>
                   <span v-if="errors.step1.status" class="text-danger">{{ errors.step1.status[0] }}</span>
+                </div>
+                <div class="col-md-12 mb-3" v-if="form.status == 'draft'">
+                  <label class="form-label">تاریخ انتشار</label>
+                  <date-picker type="datetime" display-format="jYYYY/jMM/jDD HH:MM" placeholder="از تاریخ"
+                    format="YYYY-MM-DD HH:MM" v-model="form.published_at"></date-picker>
+                  <span v-if="errors.step1.published_at" class="text-danger">{{ errors.step1.published_at[0]
+                  }}</span>
                 </div>
                 <div class="col-md-12 mb-3">
                   <label class="form-label">نوع تخفیف</label>
@@ -339,9 +347,9 @@ const loading = ref(false)
 const initialLoading = ref(true)
 
 const steps = ref([
-  { label: 'محصول', icon: 'bi bi-file-text', enabled: true, completed: false },
-  { label: 'تنوع‌ها', icon: 'bi bi-palette', enabled: false, completed: false },
-  { label: 'مشخصات', icon: 'bi bi-table', enabled: false, completed: false },
+  { label: 'اطلاعات محصول', icon: 'bi bi-file-text', enabled: true, completed: false },
+  { label: 'تنوع های محصول', icon: 'bi bi-palette', enabled: false, completed: false },
+  { label: 'جدول مشخصات', icon: 'bi bi-table', enabled: false, completed: false },
 ])
 
 const form = ref({
@@ -357,6 +365,7 @@ const form = ref({
   sales_channel: 'both',
   discount_value: '',
   discount_start_at: '',
+  published_at: '',
   discount_end_at: '',
   discount_type: '',
   barcode: '',
@@ -524,6 +533,7 @@ async function loadProduct() {
     sales_channel: product.value.sales_channel,
     discount_value: product.value.discount_value,
     discount_start_at: product.value.discount_start_at,
+    published_at: product.value.published_at,
     discount_end_at: product.value.discount_end_at,
     discount_type: product.value.discount_type,
     barcode: product.value.barcode,
@@ -613,10 +623,13 @@ async function loadProduct() {
   // بارگذاری مشخصات موجود
   if (product.value.specifications && product.value.specifications.length) {
     product.value.specifications.forEach((item) => {
-      selectedSpecification.value.push(item)
-      selectedSpecificationValues[item.id] = item.values
+      let minimalObj = item;
+      minimalObj.values = specification.value.find(it => it.id == item.id)?.values || []
+      selectedSpecification.value.push(minimalObj);
+      selectedSpecificationValues[item.id] = item.values;
     })
   }
+  console.log(selectedSpecification.value, selectedSpecificationValues);
 
   // از این به بعد watch ها فعال می‌شن و دیگه دیتای هیدریت‌شده بازنویسی نمی‌شه
   isHydrating.value = false
@@ -759,7 +772,7 @@ async function saveStep2() {
     formData.append(`variants[${index}][discount_value]`, v.discount_value ?? 0)
     formData.append(`variants[${index}][discount_start_at]`, v.discount_start_at ?? '')
     formData.append(`variants[${index}][discount_end_at]`, v.discount_end_at ?? '')
-    formData.append(`variants[${index}][discount_type]`, v.discount_type ?? 0)
+    formData.append(`variants[${index}][discount_type]`, v.discount_type ?? "")
     v.values.forEach((AV) => {
       if (AV && AV.id) formData.append(`variants[${index}][values][]`, AV.id)
     })
@@ -787,6 +800,7 @@ function skipStep2() {
 }
 
 async function saveStep3() {
+
   errors.value.step3 = {}
 
   if (!selectedSpecification.value.length) {
@@ -825,7 +839,7 @@ async function saveStep3() {
 <style scoped>
 .step-buttons {
   flex-wrap: wrap;
-  width: max(50%, 380px);
+  width: max(80%, 380px);
   margin: auto;
 }
 
@@ -888,5 +902,21 @@ async function saveStep3() {
 
 .g-3 {
   gap: 16px;
+}
+
+.steper {
+  background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+  color: white !important;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.625rem 1.25rem !important;
+  margin: 0.25rem 0.75rem !important;
+  border-radius: 10px !important;
+  color: #cfd8e3 !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
 }
 </style>

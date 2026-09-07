@@ -246,7 +246,11 @@ const routes = [
     name: "reports-products",
     component: () => import("@/views/reports/Products.vue"),
   },
-
+  {
+    path: "/reports/variant",
+    name: "reports-variant",
+    component: () => import("@/views/reports/variant.vue"),
+  },
   {
     path: "/shop/coupons",
     name: "shop-coupons",
@@ -282,15 +286,11 @@ const routes = [
   //
 
   {
-    path: "/comments/products",
-    name: "comments-products",
-    component: () => import("@/views/comments/Products.vue"),
+    path: "/comments/list",
+    name: "comments-list",
+    component: () => import("@/views/comments/list.vue"),
   },
-  {
-    path: "/comments/articles",
-    name: "comments-articles",
-    component: () => import("@/views/comments/Articles.vue"),
-  },
+
   {
     path: "/location/provinces/list",
     name: "location-province-list",

@@ -32,7 +32,7 @@
                 <tbody>
                   <tr v-for="val in values" :key="val.id">
                     <td>{{ val.id }}</td>
-                    <td>{{ val.value }}</td>
+                    <td style="max-width: 150px;">{{ val.value }}</td>
                     <td v-if="attributeType">
                       <div v-if="attributeType == 'code'" class="colorcode"
                         :style="{ backgroundColor: val.extra_value }">
@@ -75,8 +75,8 @@
                   {{ attributeType == 'code' ? "رنگ" : form.id ? "آپلود تصویر جدید" : "انتخاب تصویر" }} </label>
                 <input v-if="attributeType == 'code'" v-model="form.extra_value" type="color" class="form-control"
                   placeholder="مقدار ویژگی را وارد کنید" />
-                <VueFileAgent v-else-if="attributeType == 'image'" @select="imageLoaded" :maxFiles="1" accept=".pdf,.jpg,.png,.webp" theme="grid" deletable
-                  sortable />
+                <VueFileAgent v-else-if="attributeType == 'image'" @select="imageLoaded" :maxFiles="1"
+                  accept=".pdf,.jpg,.png,.webp" theme="grid" deletable sortable />
               </div>
 
 
@@ -169,10 +169,10 @@ const saveValue = async () => {
     }
 
   } catch (err) {
+
     if (err.response?.status === 422) {
-      Object.assign(errors, err.response.data.errors)
+      toast.error(err.response.data.message)
     }
-    toast.error(errors.value[0])
   } finally {
     loading.value = false;
   }

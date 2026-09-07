@@ -91,7 +91,7 @@
                             <i class="bi bi-x"></i>
                             انصراف
                         </button>
-                        <button type="button" class="btn btn-primary" @click="submitForm">
+                        <button type="button" class="btn btn-primary" :disabled="loading" @click="submitForm">
                             <i class="bi bi-save2"></i>
                             ثبت
                         </button>
@@ -173,6 +173,8 @@ const submitForm = async () => {
         Swal.fire("خطا", "لطفاً مبلغ را وارد کنید", "error");
         return;
     }
+    loading.value = true;
+
     let formData = new FormData();
     formData.append("wallet_id", selectedWallet.value.id)
     formData.append("amount", form.value.amount)
@@ -185,6 +187,9 @@ const submitForm = async () => {
         Swal.fire("موفق", "عملیات با موفقیت انجام شد", "success");
     } catch (error) {
         Swal.fire("خطا", "مشکلی رخ داد", "error");
+    } finally {
+        loading.value = false;
+
     }
 };
 
