@@ -45,6 +45,7 @@
             <thead>
               <tr>
                 <th>شناسه</th>
+                <th>تصویر</th>
                 <th>عنوان</th>
                 <th>قیمت</th>
                 <th>موجودی</th>
@@ -56,6 +57,13 @@
             <tbody>
               <tr v-for="product in products.data" :key="product.id">
                 <td>{{ product.id }}</td>
+                <td>
+                  <div class="imageBox">
+                    <img :src="imageResolver(product.main_image)" width="64px" alt="">
+                    <span class="counterImages">{{ product.images ? product.images.length : 10
+                    }}</span>
+                  </div>
+                </td>
                 <td>{{ product.title }}</td>
                 <td>{{ product.price }}</td>
                 <td>{{ product.stock }}</td>
@@ -154,9 +162,34 @@ const deleteProduct = (id) => {
     }
   });
 };
-
+function imageResolver(path) {
+  return window.baseImageAddress + path
+}
 onMounted(() => {
   currentPage.value = route.query.page ?? 1;
   getProducts(`${currentUrl}?page=${currentPage.value}`);
 });
 </script>
+<style>
+.imageBox {
+  position: relative;
+  width: 70px;
+  min-height: 50px;
+}
+
+.counterImages {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1000;
+  font-size: 9px;
+  transform: translate(-50%);
+  background: blue;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+</style>

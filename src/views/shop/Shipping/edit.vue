@@ -77,8 +77,18 @@
           <div v-else-if="item.condition == 'city'" class="col-md-3">
             <div class="col-md-12">
               <label class="form-label">انتخاب شهر</label>
-              <Treeselect :options="options" v-model="item.value" :multiple="false" @search-change="loadCity"
-                placeholder="جستجوی شهر..." :searchable="true" />
+
+              <multiselect @search-change="loadCity" v-model="item.value" placeholder="جستجوی شهر..."
+                open-direction="bottom" :options="options" label="label" track-by="id" :searchable="true"
+                :multiple="false" :close-on-select="true" :show-labels="false">
+                <template slot="noOptions">
+                  جستجو کنید
+                </template>
+                <template slot="noResult">
+                  <span v-if="isRequesting" v-text="'در حال جستجو...'" />
+                  <span v-else v-text="'موردی یافت نشد'"></span>
+                </template>
+              </multiselect>
             </div>
           </div>
 
@@ -95,7 +105,7 @@
           </div>
 
           <div class="col-md-3">
-            <button class="btn btn-danger" type="button" @click="removeindex(index)">     <i class="bi bi-trash3-fill"></i>
+            <button class="btn btn-danger" type="button" @click="removeindex(index)"> <i class="bi bi-trash3-fill"></i>
               <span>حذف</span></button>
           </div>
         </div>
@@ -155,17 +165,25 @@ function fetchProvince() {
 }
 
 let options = ref([]);
+let abortController = null;
 const loadCity = async (searchQuery) => {
+  if (abortController) {
+    abortController.abort();
+  }
+  abortController = new AbortController();
   try {
-
     const { data } = await axios.get('/cities?search=' + searchQuery ?? '')
     const ops = data.data.data.map(u => ({ id: u.id, label: `${u.name}` }))
     options.value = ops
-  } catch (e) {
-    console.log(e);
-    toast.error('خطا در جستجوی شهرها')
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log('درخواست قبلی کنسل شد:', error.message);
+    } else {
+      toast.error('خطا در جستجوی کاربران')
+    }
   }
 }
+
 const fetchData = async () => {
   try {
     const { data } = await axios.get(`/shipping-methods/${route.params.id}`)
@@ -214,10 +232,11 @@ const updateForm = async () => {
     if (form.value.icon) {
       formData.append("icon", form.value.icon);
     }
+
     conditions.value.forEach((shipp, index) => {
       formData.append(`conditions[${index}][condition]`, shipp.condition)
       formData.append(`conditions[${index}][type]`, shippingTypeHandler(shipp))
-      formData.append(`conditions[${index}][value]`, shipp.value)
+      formData.append(`conditions[${index}][value]`, typeof shipp.value == 'object' ? shipp.value.id : shipp.value)
     });
     await axios.post(`/shipping-methods/${route.params.id}`, formData)
     toast.success('روش حمل و نقل ویرایش شد')
