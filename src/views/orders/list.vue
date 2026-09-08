@@ -83,6 +83,8 @@
                             <th>وضعیت پرداخت</th>
                             <th>روش پرداخت</th>
                             <th>زمان سفارش</th>
+                            <th>زمان بروزرسانی</th>
+
                             <th style="width: 120px;">عملیات</th>
                         </tr>
                     </thead>
@@ -113,6 +115,7 @@
                             </td>
                             <td>{{ paymentMethodText(order.payment_method) }}</td>
                             <td>{{ new Date(order.created_at).toLocaleDateString('fa') }}</td>
+                            <td>{{ new Date(order.updated_at).toLocaleDateString('fa') }}</td>
 
                             <td>
                                 <router-link :to="`/orders/${order.id}`" class="btn btn-sm btn-info">

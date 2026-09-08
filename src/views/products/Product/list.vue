@@ -23,7 +23,8 @@
               <select v-model="filters.status" class="form-select">
                 <option value="">همه وضعیت‌ها</option>
                 <option value="published">فعال</option>
-                <option value="unpublished">غیرفعال</option>
+                <option value="unpublished">ناموجود</option>
+                <option value="draft">پیشنویس</option>
               </select>
             </div>
             <div class="col-md-2">
@@ -155,7 +156,7 @@ const deleteProduct = (id) => {
       try {
         await axios.delete(`/products/${id}`);
         Swal.fire("موفق", "محصول حذف شد", "success");
-        getProducts();
+        getProducts(`${currentUrl}?page=${currentPage.value}`);
       } catch (err) {
         Swal.fire("خطا", "مشکلی در حذف پیش آمد", "error");
       }
