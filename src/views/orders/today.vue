@@ -12,6 +12,12 @@
           </h3>
 
           <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 header-actions">
+            <button v-if="selectedOrders.length > 0" @click="bulkComplete" class="btn btn-warning bulk-complete-btn"
+              :disabled="bulkCompleting">
+              <span v-if="bulkCompleting" class="spinner-border spinner-border-sm"></span>
+              <i v-else class="bi bi-check2-circle"></i>
+              <span>تکمیل ({{ selectedOrders.length }})</span>
+            </button>
             <!-- انتخاب نوع پرینت -->
             <select v-model="printType" class="form-select form-select-sm print-type-select">
               <option value="full">پرینت کامل (جزئیات سفارش)</option>
@@ -37,27 +43,6 @@
           <div class="col-12 col-sm-6 col-md-3">
             <input v-model="filters.search" @input="getOrders" type="text" class="form-control search-input"
               placeholder="جستجو (کاربر یا شماره سفارش)" />
-          </div>
-          <div class="col-6 col-sm-3 col-md-2">
-            <select v-model="filters.status" @change="getOrders" class="form-select">
-              <option value="">همه وضعیت‌ها</option>
-              <option value="pending">در انتظار</option>
-              <option value="reserved">رزرو شده</option>
-              <option value="processing">در حال پردازش</option>
-              <option value="shipped">ارسال شده</option>
-              <option value="completed">تکمیل شده</option>
-              <option value="canceled">لغو شده</option>
-              <option value="returned">مرجوعی</option>
-            </select>
-          </div>
-          <div class="col-6 col-sm-3 col-md-2">
-            <select v-model="filters.payment_status" @change="getOrders" class="form-select">
-              <option value="">همه پرداخت‌ها</option>
-              <option value="pending">در انتظار پرداخت</option>
-              <option value="paid">پرداخت شده</option>
-              <option value="failed">ناموفق</option>
-              <option value="refunded">برگشت داده شده</option>
-            </select>
           </div>
           <div class="col-12 col-sm-6 col-md-2">
             <select v-model="filters.payment_method" @change="getOrders" class="form-select">
@@ -228,7 +213,54 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { useAdmin } from '@/stores/modules/admin';
+import Swal from "sweetalert2";
 
+const bulkCompleting = ref(false);
+
+const bulkComplete = async () => {
+  if (selectedOrders.value.length === 0) return;
+
+  const count = selectedOrders.value.length;
+  const result = await Swal.fire({
+    title: 'تایید تکمیل سفارش‌ها',
+    html: `آیا از تکمیل کردن <b>${count}</b> سفارش انتخاب شده مطمئن هستید؟`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'بله، تکمیل کن',
+    cancelButtonText: 'انصراف',
+    confirmButtonColor: '#f59e0b',
+    cancelButtonColor: '#6c757d',
+    reverseButtons: true,
+  });
+
+  if (!result.isConfirmed) return;
+
+  bulkCompleting.value = true;
+  try {
+    const { data } = await axios.post('/orders-bulk-complete', {
+      ids: selectedOrders.value,
+    });
+
+    Swal.fire({
+      icon: 'success',
+      title: 'انجام شد',
+      text: data.message ?? 'سفارش‌ها با موفقیت تکمیل شدند.',
+      timer: 1800,
+      showConfirmButton: false,
+    });
+
+    selectedOrders.value = [];
+    getOrders();
+  } catch (error) {
+    Swal.fire({
+      icon: 'error',
+      title: 'خطا',
+      text: error.response?.data?.message ?? 'عملیات با خطا مواجه شد.',
+    });
+  } finally {
+    bulkCompleting.value = false;
+  }
+};
 const router = useRouter();
 const store = useAdmin();
 const checkPermission = store.checkPermission;
@@ -767,6 +799,37 @@ onMounted(() => {
 @media (min-width: 768px) {
   .order-cards {
     display: none;
+  }
+}
+
+.bulk-complete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  color: #fff;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  transition: all 0.3s;
+}
+
+.bulk-complete-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+}
+
+.bulk-complete-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 767.98px) {
+  .bulk-complete-btn {
+    width: 100%;
   }
 }
 </style>

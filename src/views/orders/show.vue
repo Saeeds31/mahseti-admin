@@ -49,9 +49,14 @@
               آدرس
             </span>
             <span class="info-value">
-              <span class="value-text">{{ getAddressText(order?.address) }} <span><b>کدپستی:</b>{{
+              <span class="value-text">{{ getAddressText(order?.address) }} <span><b>  -کدپستی: </b>{{
                 order?.address?.postal_code
-              }}</span></span>
+                  }}</span>
+                <span><b>  -شماره تماس: </b>{{
+                  order?.address?.phone
+                }}</span>
+
+              </span>
 
               <b-button v-if="canEdit" variant="outline-primary" size="sm" class="edit-btn"
                 @click="showAddressModalFunc()" title="ویرایش آدرس">

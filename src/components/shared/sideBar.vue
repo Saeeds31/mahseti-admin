@@ -348,7 +348,7 @@ const menuItems = ref([
     icon: "bi-basket3",
     children: [
       {
-        name: "سفارشات روز",
+        name: "سفارشات پیش رو",
         permissions: ['order_today'],
         link: "/orders/today",
         icon: "bi-calendar-day"

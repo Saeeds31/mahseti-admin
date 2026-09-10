@@ -46,8 +46,9 @@
               <option value="reserved">رزرو شده</option>
               <option value="processing">در حال پردازش</option>
               <option value="shipped">ارسال شده</option>
+              <option value="paid">پرداخت شده</option>
               <option value="completed">تکمیل شده</option>
-              <option value="canceled">لغو شده</option>
+              <option value="failed">لغو شده</option>
               <option value="returned">مرجوعی</option>
             </select>
           </div>
@@ -133,8 +134,9 @@
                     </td>
                     <td>{{ paymentMethodText(order.payment_method) }}</td>
                     <td>{{
-                      order.gateway_transactions && order.gateway_transactions.length ? findGateWayName(order.gateway_transactions):""
-                      }}</td>
+                      order.gateway_transactions && order.gateway_transactions.length ?
+                        findGateWayName(order.gateway_transactions) : ""
+                    }}</td>
 
                     <td class="date-cell">{{ new Date(order.created_at).toLocaleDateString('fa') }}</td>
                     <td class="date-cell">{{ new Date(order.updated_at).toLocaleDateString('fa') }}</td>
@@ -353,7 +355,7 @@ const statusText = (status) => {
     paid: "پرداخت شده",
     shipped: "ارسال شده",
     completed: "تکمیل شده",
-    canceled: "لغو شده",
+    failed: "لغو شده",
     returned: "مرجوعی",
   };
   return map[status] ?? status;
@@ -367,7 +369,7 @@ const statusBadge = (status) => {
     shipped: "bg-primary",
     completed: "bg-success",
     paid: "bg-success",
-    canceled: "bg-danger",
+    failed: "bg-danger",
     returned: "bg-dark",
   };
   return map[status] ?? "bg-secondary";
