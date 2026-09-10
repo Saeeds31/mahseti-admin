@@ -104,6 +104,8 @@
                     <th>وضعیت سفارش</th>
                     <th>وضعیت پرداخت</th>
                     <th>روش پرداخت</th>
+                    <th> دگاه پرداخت</th>
+
                     <th>زمان سفارش</th>
                     <th>زمان بروزرسانی</th>
                     <th style="width: 120px;">عملیات</th>
@@ -130,6 +132,10 @@
                       </span>
                     </td>
                     <td>{{ paymentMethodText(order.payment_method) }}</td>
+                    <td>{{
+                      order.gateway_transactions && order.gateway_transactions.length ? findGateWayName(order.gateway_transactions):""
+                      }}</td>
+
                     <td class="date-cell">{{ new Date(order.created_at).toLocaleDateString('fa') }}</td>
                     <td class="date-cell">{{ new Date(order.updated_at).toLocaleDateString('fa') }}</td>
 
@@ -254,7 +260,16 @@ const orders = ref({ data: [] });
 const loading = ref(false);
 const selectedOrders = ref([]);
 const printType = ref('full');
-
+function findGateWayName(gateway_transactions) {
+  let names = {
+    parsian: 'پارسیان',
+    zarinpal: 'زرین پال',
+  }
+  let finded = gateway_transactions.find(i => i.status == "paid")
+  if (finded)
+    return names[finded.gateway]
+  return "-"
+}
 const filters = ref({
   search: "",
   status: "",

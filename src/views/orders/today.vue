@@ -103,6 +103,7 @@
                     <th>وضعیت سفارش</th>
                     <th>وضعیت پرداخت</th>
                     <th>روش پرداخت</th>
+                    <th>دگاه پرداخت</th>
                     <th style="width: 120px;">عملیات</th>
                   </tr>
                 </thead>
@@ -127,6 +128,11 @@
                       </span>
                     </td>
                     <td>{{ paymentMethodText(order.payment_method) }}</td>
+                    <td>{{
+                      order.gateway_transactions && order.gateway_transactions.length ?
+                        findGateWayName(order.gateway_transactions) : '-' }}</td>
+
+
                     <td>
                       <div class="d-flex flex-wrap gap-1 justify-content-center">
                         <router-link :to="`/orders/${order.id}`" class="btn btn-sm btn-info" title="مشاهده">
@@ -362,7 +368,16 @@ const paymentMethodText = (method) => {
   };
   return map[method] ?? method;
 };
-
+function findGateWayName(gateway_transactions) {
+  let names = {
+    parsian: 'پارسیان',
+    zarinpal: 'زرین پال',
+  }
+  let finded = gateway_transactions.find(i => i.status == "paid")
+  if (finded)
+    return names[finded.gateway]
+  return "-"
+}
 onMounted(() => {
   getOrders();
 });

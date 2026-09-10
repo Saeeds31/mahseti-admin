@@ -88,10 +88,10 @@
             <span class="info-value reservation-value">
               <b-form-select v-model="order.reservation_type" :options="reservationTypeOptions" size="sm"
                 :disabled="loadingReservation" class="reservation-select" />
-              <b-button variant="outline-primary" size="sm" class="edit-btn" @click="changeReservationType"
+              <b-button variant="outline-primary" size="md" @click="changeReservationType"
                 :disabled="loadingReservation">
                 <i v-if="loadingReservation" class="bi bi-three-dots"></i>
-                <i v-else class="bi bi-save2"></i>
+                <span v-else>بروز رسانی</span>
               </b-button>
             </span>
           </div>
@@ -115,6 +115,12 @@
               <span class="value-text">
                 <i class="fas fa-credit-card me-1"></i>
                 {{ paymentMethods[order?.payment_method] || 'نامشخص' }}
+                {{
+                  order.gateway_transactions && order.gateway_transactions.length ?
+                    " - " +
+                    findGateWayName(order.gateway_transactions) : ""
+
+                }}
               </span>
             </span>
           </div>
@@ -532,7 +538,16 @@ import 'vue3-treeselect/dist/vue3-treeselect.css'
 import Multiselect from 'vue-multiselect'
 import 'vue-multiselect/dist/vue-multiselect.css'
 import Modal from '@/components/shared/modal.vue'
-
+function findGateWayName(gateway_transactions) {
+  let names = {
+    parsian: 'پارسیان',
+    zarinpal: 'زرین پال',
+  }
+  let finded = gateway_transactions.find(i => i.status == "paid")
+  if (finded)
+    return names[finded.gateway]
+  return "-"
+}
 const store = useAdmin()
 const checkPermission = store.checkPermission
 const route = useRoute()
