@@ -14,8 +14,8 @@
 
       <div class="menu-items-wrapper">
         <div v-for="item in menuItems" :key="item.name" class="w-100">
-          <b-nav-item v-if="!item.children && checkPermission(item.permissions)" :to="item.link" class="menu-item"
-            :class="{ 'active': isActiveRoute(item.link) }">
+          <b-nav-item v-if="!item.children && checkPermission(item.permissions)" :to="item.link"
+            @click="mobileOpen = false" class="menu-item" :class="{ 'active': isActiveRoute(item.link) }">
             <i :class="item.icon + ' me-2'"></i>
             <span v-if="mobileOpen || windowWidth < 992">{{ item.name }}</span>
           </b-nav-item>
@@ -25,16 +25,16 @@
             <button class="navItem btn w-100 text-start menu-group-btn"
               :class="{ 'has-active-child': hasActiveChild(item) }" @click="toggleSubmenu(item)">
               <i :class="item.icon + ' me-2'"></i>
-              <span v-if="mobileOpen || windowWidth < 992">{{ item.name }}</span>
+              <span>{{ item.name }}</span>
               <i class="ms-auto bi" :class="openSubmenuStates[item.name] ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
             </button>
             <b-collapse v-model="openSubmenuStates[item.name]" class="submenu-wrapper">
               <b-nav vertical>
                 <template v-for="child in item.children" :key="child.name">
                   <b-nav-item v-if="checkPermission(child.permissions)" :to="child.link" class="submenu-item"
-                    :class="{ 'active': isActiveRoute(child.link) }">
+                    @click="mobileOpen = false" :class="{ 'active': isActiveRoute(child.link) }">
                     <i :class="child.icon + ' me-2'"></i>
-                    <span v-if="mobileOpen || windowWidth < 992">{{ child.name }}</span>
+                    <span>{{ child.name }}</span>
                   </b-nav-item>
                 </template>
               </b-nav>
@@ -231,7 +231,7 @@ const menuItems = ref([
         link: "/reports/products",
         icon: "bi-box2"
       },
-      
+
       {
         name: "تنوع ها",
         permissions: ['report_products'],
@@ -289,7 +289,7 @@ const menuItems = ref([
         link: "/comments/list",
         icon: "bi-bag"
       },
-      
+
     ],
   },
 

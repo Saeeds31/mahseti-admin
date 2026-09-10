@@ -138,8 +138,8 @@
                 </div>
                 <div class="col-md-12 mb-3" v-if="form.status == 'draft'">
                   <label class="form-label">تاریخ انتشار</label>
-                  <date-picker type="datetime" display-format="jYYYY/jMM/jDD HH:MM" placeholder="از تاریخ"
-                    format="YYYY-MM-DD HH:MM" v-model="form.published_at"></date-picker>
+                  <date-picker type="datetime" display-format="jYYYY/jMM/jDD HH:mm" placeholder="از تاریخ"
+                    format="YYYY-MM-DD HH:mm" v-model="form.published_at"></date-picker>
                   <span v-if="errors.step1.published_at" class="text-danger">{{ errors.step1.published_at[0]
                   }}</span>
                 </div>

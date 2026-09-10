@@ -41,4 +41,12 @@ div#mainContent {
 div#mainContent.mr-0 {
   margin-right: 0;
 }
+
+@media (max-width:768px) {
+  div#mainContent {
+    margin-right: 0;
+    width: 100%;
+    overflow: hidden;
+  }
+}
 </style>
