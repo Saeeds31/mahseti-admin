@@ -69,11 +69,7 @@
                 <template v-if="printType === 'full'">
 
                     <div class="invoice-page">
-                        <div
-                            v-for="(order, index) in orders"
-                            :key="order.id"
-                            class="invoice-a4"
-                        >
+                        <div v-for="(order, index) in orders" :key="order.id" class="invoice-a4">
 
                             <!-- ===== باکس بالا: اطلاعات فروشگاه ===== -->
                             <div class="box box-store">
@@ -103,9 +99,17 @@
                                         <span class="cell-label">تلفن:</span>
                                         <strong class="cell-value">09375015769</strong>
                                     </div>
+                                    <div class="store-cell">
+                                        <span class="cell-label">شیوه ارسال:</span>
+                                        <strong class="cell-value">{{ order?.shipping?.title }}</strong>
+                                    </div>
                                 </div>
 
                                 <div class="store-row">
+                                    <div class="store-cell">
+                                        <span class="cell-label">کدپستی:</span>
+                                        <strong class="cell-value">4917765197</strong>
+                                    </div>
                                     <div class="store-cell full-width">
                                         <span class="cell-label">آدرس:</span>
                                         <strong class="cell-value">
@@ -136,7 +140,8 @@
                                     </div>
                                     <div class="receiver-item">
                                         <span class="cell-label">تاریخ سفارش:</span>
-                                        <strong class="cell-value">{{ new Date(order.created_at).toLocaleDateString('fa-IR') }}</strong>
+                                        <strong class="cell-value">{{ new
+                                            Date(order.created_at).toLocaleDateString('fa-IR') }}</strong>
                                     </div>
                                 </div>
 
@@ -168,8 +173,10 @@
                                         <tr v-for="(item, idx) in order.items" :key="item.id">
                                             <td class="cell-specs">
                                                 <template v-if="item.variant?.values?.length">
-                                                    <span v-for="val in item.variant.values" :key="val.id" class="spec-line">
-                                                        {{ val.attribute ? val.attribute.name + ' ' : '' }}{{ val.value }}
+                                                    <span v-for="val in item.variant.values" :key="val.id"
+                                                        class="spec-line">
+                                                        {{ val.attribute ? val.attribute.name + ' ' : '' }}{{ val.value
+                                                        }}
                                                     </span>
                                                 </template>
                                                 <span v-else class="muted">-</span>
@@ -177,9 +184,11 @@
                                             <td class="cell-index">{{ String(idx + 1).padStart(2, '0') }}</td>
                                             <td class="cell-product">{{ item.product?.title ?? '-' }}</td>
                                             <td class="cell-price">{{ Number(item.price).toLocaleString('fa-IR') }}</td>
-                                            <td class="cell-discount">{{ Number(item.discount ?? 0).toLocaleString('fa-IR') }}</td>
+                                            <td class="cell-discount">{{ Number(item.discount ??
+                                                0).toLocaleString('fa-IR') }}</td>
                                             <td class="cell-qty">{{ item.quantity }}</td>
-                                            <td class="cell-total">{{ Number(item.price * item.quantity).toLocaleString('fa-IR') }}</td>
+                                            <td class="cell-total">{{ Number(item.price *
+                                                item.quantity).toLocaleString('fa-IR') }}</td>
                                         </tr>
                                         <tr v-if="!order.items?.length">
                                             <td colspan="7" class="text-center muted">بدون آیتم</td>
@@ -201,24 +210,33 @@
                                 <div class="summary-row">
                                     <div class="summary-cell">
                                         <span class="cell-label">مبلغ کل:</span>
-                                        <strong class="cell-value">{{ Number(order.subtotal).toLocaleString('fa-IR') }} تومان</strong>
+                                        <strong class="cell-value">{{ Number(order.subtotal).toLocaleString('fa-IR') }}
+                                            تومان</strong>
                                     </div>
                                     <div class="summary-cell">
                                         <span class="cell-label">مبلغ حمل و نقل:</span>
-                                        <strong class="cell-value">{{ Number(order.shipping_cost).toLocaleString('fa-IR') }} تومان</strong>
+                                        <strong class="cell-value">{{
+                                            Number(order.shipping_cost).toLocaleString('fa-IR') }} تومان</strong>
                                     </div>
                                     <div class="summary-cell highlight">
                                         <span class="cell-label">مبلغ نهایی:</span>
-                                        <strong class="cell-value">{{ Number(order.total).toLocaleString('fa-IR') }} تومان</strong>
+                                        <strong class="cell-value">{{ Number(order.total).toLocaleString('fa-IR') }}
+                                            تومان</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="box box-summary">
+                                <div class="summary-row">
+                                    <div class="summary-cell">
+                                        <span class="cell-label">توضیحات سفارش:</span>
+                                        <strong class="cell-value">{{ order.user_note }}
+                                        </strong>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- ✅ جداکننده بین دو سفارش در یک صفحه (فقط در نمایش) -->
-                            <div
-                                v-if="index < orders.length - 1 && index % 2 === 0"
-                                class="order-divider"
-                            >
+                            <div v-if="index < orders.length - 1 && index % 2 === 0" class="order-divider">
                                 <span></span>
                                 <i class="bi bi-scissors"></i>
                                 <span></span>
@@ -1052,7 +1070,9 @@ onMounted(() => {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* =========================================================

@@ -45,9 +45,9 @@
                     </div>
 
                     <!-- افزودن محصول -->
-                    <div class="col-12">
-                        <label class="form-label">افزودن محصول</label>
-                        <div class="gap-2 align-items-center selectProduct">
+                    <div class="col-12 gap-2">
+                        <div class="gap-2 d-flex flex-column align-items-start selectProduct">
+                            <label class="form-label">افزودن محصول</label>
                             <multiselect @search-change="loadProducts" v-model="selectedProduct"
                                 placeholder="انتخاب محصول" open-direction="bottom" :options="productOptions"
                                 label="title" track-by="id" :searchable="true" :multiple="false" :close-on-select="true"
@@ -58,12 +58,16 @@
                                     <span v-else v-text="'موردی یافت نشد'"></span>
                                 </template>
                             </multiselect>
-                            <input v-model.number="selectedQuantity" type="number" min="1" class="form-control"
-                                placeholder="تعداد" />
-                            <button type="button" class="btn btn-success" @click="addProduct">افزودن</button>
                         </div>
-                    </div>
+                        <div class=" row mt-2 gap-2">
+                            <div class="col-6">
+                                <input v-model.number="selectedQuantity" type="number" min="1" class="form-control"
+                                    placeholder="تعداد" />
+                            </div>
+                            <button type="button" class="btn btn-success col-4" @click="addProduct">افزودن</button>
+                        </div>
 
+                    </div>
                     <!-- لیست محصولات انتخاب‌شده -->
                     <div class="col-12" v-if="form.items.length">
                         <h5>محصولات انتخاب شده</h5>
@@ -132,6 +136,10 @@
                         <hr />
                         <h5>مبلغ نهایی: <strong>{{ total.toLocaleString() }} تومان</strong></h5>
                     </div>
+                    <div class="d-flex flex-column gap-2">
+                        <label for="">توضیحات سفارش :</label>
+                        <textarea name="" class="form-control" v-model="user_note" id=""></textarea>
+                    </div>
                     <div class="card-footer">
                         <button class="btn btn-primary w-100" @click="submitOrder" :disabled="loading">
                             {{ loading ? 'در حال ثبت...' : 'ثبت سفارش' }}
@@ -163,7 +171,7 @@ const form = ref({
     parent_order: '',
     items: []
 });
-
+let user_note = ref('');
 let discount_amount = ref(0);
 let selectedAddress = ref(null);
 const addresses = ref([]);
@@ -449,6 +457,7 @@ const submitOrder = async () => {
         }
 
         formData.append("total", total.value);
+        formData.append("user_note", user_note.value);
 
         form.value.items.forEach((item, index) => {
             formData.append(`items[${index}][product_id]`, item.product_id);

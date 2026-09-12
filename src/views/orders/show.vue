@@ -49,10 +49,10 @@
               آدرس
             </span>
             <span class="info-value">
-              <span class="value-text">{{ getAddressText(order?.address) }} <span><b>  -کدپستی: </b>{{
+              <span class="value-text">{{ getAddressText(order?.address) }} <span><b> -کدپستی: </b>{{
                 order?.address?.postal_code
-                  }}</span>
-                <span><b>  -شماره تماس: </b>{{
+              }}</span>
+                <span><b> -شماره تماس: </b>{{
                   order?.address?.phone
                 }}</span>
 
@@ -140,7 +140,16 @@
               <span :class="getStatusClass(order?.status)">{{ getStatusText(order?.status) }}</span>
             </span>
           </div>
-
+          <!-- توضیحات -->
+          <div class="info-item">
+            <span class="info-label">
+              <i class="bi bi-pencil"></i>
+              توضیحات
+            </span>
+            <span class="info-value">
+              <span >{{ order?.user_note }}</span>
+            </span>
+          </div>
           <div v-if="order?.status == 'reserved'" class="alert alert-info mt-3 mb-0 reserved-alert">
             <i class="fas fa-clock me-1"></i>
             تاریخ اتمام رزرو: {{ formatDate(order?.reserved_until) }}
