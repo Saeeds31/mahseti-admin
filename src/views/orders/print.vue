@@ -225,7 +225,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="box box-summary">
+                            <div class="box box-summary" v-if="order.user_note">
                                 <div class="summary-row">
                                     <div class="summary-cell">
                                         <span class="cell-label">توضیحات سفارش:</span>

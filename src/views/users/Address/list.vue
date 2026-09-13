@@ -69,7 +69,7 @@ const getAddresses = async () => {
     loading.value = true;
     try {
         const response = await axios.get(`/users/${route.params.id}/addresses`);
-        addresses.value = response.data;
+        addresses.value = response.data.data;
     } finally {
         loading.value = false;
     }

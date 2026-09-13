@@ -35,12 +35,68 @@
       <!-- فیلترها -->
       <div class="card-body p-2 p-md-3">
         <div class="row g-2">
+
+          <!-- سرچ عمومی -->
           <div class="col-12 col-sm-6 col-md-3">
-            <input v-model="filters.search" @input="getOrders" type="text" class="form-control search-input"
-              placeholder="جستجو (کاربر یا شماره سفارش)" />
+            <label class="filter-label">جستجو (کاربر / موبایل / شماره سفارش)</label>
+            <input v-model="filters.search" @keyup.enter="applyFilters" type="text" class="form-control search-input"
+              placeholder="نام، موبایل یا شماره سفارش" />
           </div>
+
+          <!-- سرچ آیتم سفارش -->
+          <div class="col-12 col-sm-6 col-md-3">
+            <label class="filter-label">جستجوی آیتم سفارش</label>
+            <input v-model="filters.item_search" @keyup.enter="applyFilters" type="text"
+              class="form-control search-input" placeholder="نام محصول، کد یا SKU" />
+          </div>
+
+          <!-- استان -->
           <div class="col-6 col-sm-3 col-md-2">
-            <select v-model="filters.status" @change="getOrders" class="form-select">
+            <label class="filter-label">استان</label>
+            <select v-model="filters.province_id" @change="onProvinceChange" class="form-select">
+              <option value="">همه استان‌ها</option>
+              <option v-for="p in provinces" :key="p.id" :value="p.id">{{ p.name }}</option>
+            </select>
+          </div>
+
+          <!-- سرچ شهر (فقط وقتی استان انتخاب نشده) -->
+          <div v-if="!filters.province_id" class="col-6 col-sm-3 col-md-2 position-relative">
+            <label class="filter-label">جستجوی شهر</label>
+            <input v-model="citySearch" @input="onCitySearch" @focus="showCityResults = true" type="text"
+              class="form-control search-input" placeholder="نام شهر..." />
+            <!-- نتایج سرچ -->
+            <div v-if="showCityResults && searchedCities.length" class="city-results">
+              <div v-for="c in searchedCities" :key="c.id" class="city-result-item" @click="selectCity(c)">
+                {{ c.name }}
+                <small v-if="c.province">- {{ c.province.name }}</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- شهر (وقتی استان انتخاب شده) -->
+          <div v-if="filters.province_id" class="col-6 col-sm-3 col-md-2">
+            <label class="filter-label">شهر</label>
+            <select v-model="filters.city_id" class="form-select">
+              <option value="">همه شهرها</option>
+              <option v-for="c in cities" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+          </div>
+
+          <!-- نمایش شهر انتخاب‌شده وقتی استان انتخاب نشده -->
+          <div v-if="!filters.province_id && filters.city_id" class="col-6 col-sm-3 col-md-2">
+            <label class="filter-label">شهر انتخاب‌شده</label>
+            <div class="selected-city-box">
+              <span>{{ selectedCityName }}</span>
+              <button type="button" class="btn-clear-city" @click="clearCity">
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- وضعیت سفارش -->
+          <div class="col-6 col-sm-3 col-md-2">
+            <label class="filter-label">وضعیت سفارش</label>
+            <select v-model="filters.status" class="form-select">
               <option value="">همه وضعیت‌ها</option>
               <option value="pending">در انتظار</option>
               <option value="reserved">رزرو شده</option>
@@ -52,8 +108,11 @@
               <option value="returned">مرجوعی</option>
             </select>
           </div>
+
+          <!-- وضعیت پرداخت -->
           <div class="col-6 col-sm-3 col-md-2">
-            <select v-model="filters.payment_status" @change="getOrders" class="form-select">
+            <label class="filter-label">وضعیت پرداخت</label>
+            <select v-model="filters.payment_status" class="form-select">
               <option value="">همه پرداخت‌ها</option>
               <option value="pending">در انتظار پرداخت</option>
               <option value="paid">پرداخت شده</option>
@@ -61,13 +120,42 @@
               <option value="refunded">برگشت داده شده</option>
             </select>
           </div>
-          <div class="col-12 col-sm-6 col-md-2">
-            <select v-model="filters.payment_method" @change="getOrders" class="form-select">
+
+          <!-- روش پرداخت -->
+          <div class="col-6 col-sm-3 col-md-2">
+            <label class="filter-label">روش پرداخت</label>
+            <select v-model="filters.payment_method" class="form-select">
               <option value="">روش پرداخت</option>
               <option value="online">پرداخت آنلاین</option>
               <option value="wallet">کیف پول</option>
               <option value="cod">پرداخت در محل</option>
             </select>
+          </div>
+
+          <!-- تاریخ از -->
+          <div class="col-12 col-sm-6 col-md-3">
+            <label class="filter-label">از تاریخ</label>
+            <date-picker type="datetime" display-format="jYYYY/jMM/jDD HH:mm" placeholder="از تاریخ"
+              format="YYYY-MM-DD HH:mm" v-model="filters.date_from"></date-picker>
+          </div>
+
+          <!-- تاریخ تا -->
+          <div class="col-12 col-sm-6 col-md-3">
+            <label class="filter-label">تا تاریخ</label>
+            <date-picker type="datetime" display-format="jYYYY/jMM/jDD HH:mm" placeholder="تا تاریخ"
+              format="YYYY-MM-DD HH:mm" v-model="filters.date_to"></date-picker>
+          </div>
+
+          <!-- دکمه‌های فیلتر -->
+          <div class="col-12 d-flex gap-2 flex-wrap filter-actions">
+            <button @click="applyFilters" class="btn btn-primary filter-btn">
+              <i class="bi bi-funnel"></i>
+              <span>فیلتر</span>
+            </button>
+            <button @click="resetFilters" class="btn btn-outline-secondary reset-btn">
+              <i class="bi bi-arrow-counterclockwise"></i>
+              <span>حذف فیلترها</span>
+            </button>
           </div>
         </div>
       </div>
@@ -138,7 +226,7 @@
                         findGateWayName(order.gateway_transactions) : ""
                     }}</td>
 
-                    <td class="date-cell">{{ new Date(order.created_at).toLocaleDateString('fa') }}</td>
+                    <td class="date-cell">{{ new Date(order.created_at).toLocaleString('fa') }}</td>
                     <td class="date-cell">{{ new Date(order.updated_at).toLocaleDateString('fa') }}</td>
 
                     <td>
@@ -248,13 +336,13 @@
 </template>
 
 <script setup>
-/* ===== بدون هیچ تغییری در منطق ===== */
-import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, onUnmounted, computed } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import axios from "axios";
 import { useAdmin } from '@/stores/modules/admin';
 
 const router = useRouter();
+const route = useRoute();
 const store = useAdmin();
 const checkPermission = store.checkPermission;
 
@@ -262,6 +350,15 @@ const orders = ref({ data: [] });
 const loading = ref(false);
 const selectedOrders = ref([]);
 const printType = ref('full');
+
+// استان و شهر
+const provinces = ref([]);
+const cities = ref([]);            // شهرهای استان انتخاب‌شده
+const searchedCities = ref([]);    // نتایج سرچ شهر (وقتی استان انتخاب نشده)
+const citySearch = ref("");
+const showCityResults = ref(false);
+let citySearchTimeout = null;
+
 function findGateWayName(gateway_transactions) {
   let names = {
     parsian: 'پارسیان',
@@ -272,13 +369,26 @@ function findGateWayName(gateway_transactions) {
     return names[finded.gateway]
   return "-"
 }
+
 const filters = ref({
   search: "",
+  item_search: "",
+  province_id: "",
+  city_id: "",
   status: "",
   payment_status: "",
   payment_method: "",
+  date_from: "",
+  date_to: "",
 });
 const currentPage = ref(1);
+
+// نام شهر انتخاب‌شده برای نمایش
+const selectedCityName = computed(() => {
+  if (!filters.value.city_id) return "";
+  const found = searchedCities.value.find(c => c.id == filters.value.city_id);
+  return found ? found.name : "";
+});
 
 const allSelected = computed(() => {
   return orders.value.data.length > 0 &&
@@ -316,7 +426,124 @@ const singlePrint = (orderId) => {
     }
   });
 };
+
 let abortController = null;
+
+// ===== استان‌ها و شهرها =====
+const getProvinces = async () => {
+  try {
+    const response = await axios.get("/provinces");
+    provinces.value = response.data.data?.data || response.data.data || response.data;
+  } catch (e) {
+    console.error("خطا در دریافت استان‌ها", e);
+  }
+};
+
+// دریافت شهرهای یک استان (وقتی استان انتخاب شده)
+const getCitiesByProvince = async (provinceId) => {
+  if (!provinceId) {
+    cities.value = [];
+    return;
+  }
+  try {
+    const response = await axios.get("/cities", {
+      params: {
+        province_id: provinceId,
+        per_page: 100,
+      },
+    });
+    cities.value = response.data.data?.data || response.data.data || [];
+  } catch (e) {
+    console.error("خطا در دریافت شهرها", e);
+  }
+};
+
+// سرچ شهر در همه استان‌ها (وقتی استان انتخاب نشده)
+const searchCities = async (search) => {
+  if (!search || search.length < 2) {
+    searchedCities.value = [];
+    return;
+  }
+  try {
+    const response = await axios.get("/cities", {
+      params: {
+        search: search,
+        per_page: 30,
+      },
+    });
+    searchedCities.value = response.data.data?.data || response.data.data || [];
+  } catch (e) {
+    console.error("خطا در سرچ شهرها", e);
+  }
+};
+
+// Debounce سرچ شهر
+const onCitySearch = () => {
+  if (citySearchTimeout) clearTimeout(citySearchTimeout);
+  citySearchTimeout = setTimeout(() => {
+    searchCities(citySearch.value);
+  }, 400);
+};
+
+// انتخاب یک شهر از نتایج سرچ
+const selectCity = (city) => {
+  filters.value.city_id = city.id;
+  citySearch.value = city.name;
+  showCityResults.value = false;
+};
+
+// پاک کردن شهر انتخاب‌شده
+const clearCity = () => {
+  filters.value.city_id = "";
+  citySearch.value = "";
+  searchedCities.value = [];
+};
+
+// با تغییر استان
+const onProvinceChange = () => {
+  filters.value.city_id = "";
+  citySearch.value = "";
+  searchedCities.value = [];
+  cities.value = [];
+  if (filters.value.province_id) {
+    getCitiesByProvince(filters.value.province_id);
+  }
+};
+
+// بستن نتایج سرچ وقتی کاربر جای دیگری کلیک می‌کند
+const handleClickOutside = (e) => {
+  if (!e.target.closest('.position-relative')) {
+    showCityResults.value = false;
+  }
+};
+
+// ===== URL =====
+const syncFiltersToUrl = () => {
+  const query = {};
+  Object.keys(filters.value).forEach(key => {
+    if (filters.value[key]) {
+      query[key] = filters.value[key];
+    }
+  });
+  if (currentPage.value > 1) {
+    query.page = currentPage.value;
+  }
+  router.replace({ query });
+};
+
+const loadFiltersFromUrl = () => {
+  const q = route.query;
+  filters.value.search = q.search || "";
+  filters.value.item_search = q.item_search || "";
+  filters.value.province_id = q.province_id || "";
+  filters.value.city_id = q.city_id || "";
+  filters.value.status = q.status || "";
+  filters.value.payment_status = q.payment_status || "";
+  filters.value.payment_method = q.payment_method || "";
+  filters.value.date_from = q.date_from || "";
+  filters.value.date_to = q.date_to || "";
+  currentPage.value = q.page ? parseInt(q.page) : 1;
+};
 
 const getOrders = async (page = 1) => {
   loading.value = true;
@@ -334,13 +561,35 @@ const getOrders = async (page = 1) => {
         ...filters.value,
       },
       signal: abortController.signal,
-
     });
     orders.value = response.data.data;
     currentPage.value = page;
+    syncFiltersToUrl();
   } finally {
     loading.value = false;
   }
+};
+
+const applyFilters = () => {
+  getOrders(1);
+};
+
+const resetFilters = () => {
+  filters.value = {
+    search: "",
+    item_search: "",
+    province_id: "",
+    city_id: "",
+    status: "",
+    payment_status: "",
+    payment_method: "",
+    date_from: "",
+    date_to: "",
+  };
+  cities.value = [];
+  searchedCities.value = [];
+  citySearch.value = "";
+  getOrders(1);
 };
 
 const changePage = (page) => {
@@ -367,7 +616,7 @@ const statusBadge = (status) => {
     reserved: "bg-warning text-dark",
     processing: "bg-info",
     shipped: "bg-primary",
-    completed: "bg-success",
+    completed: "bg-black",
     paid: "bg-success",
     failed: "bg-danger",
     returned: "bg-dark",
@@ -404,8 +653,36 @@ const paymentMethodText = (method) => {
   return map[method] ?? method;
 };
 
-onMounted(() => {
-  getOrders();
+onMounted(async () => {
+  await getProvinces();
+  loadFiltersFromUrl();
+
+  // اگر استان در URL بود، شهرهاش لود شوند
+  if (filters.value.province_id) {
+    await getCitiesByProvince(filters.value.province_id);
+  }
+
+  // اگر شهر انتخاب شده بود ولی استان نبود، برای نمایش اسمش سرچ کن
+  if (filters.value.city_id && !filters.value.province_id) {
+    try {
+      const resp = await axios.get("/cities", {
+        params: { search: filters.value.city_id, per_page: 1 },
+      });
+      const list = resp.data.data?.data || resp.data.data || [];
+      const found = list.find(c => c.id == filters.value.city_id);
+      if (found) {
+        citySearch.value = found.name;
+        searchedCities.value = [found];
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  document.addEventListener('click', handleClickOutside);
+  getOrders(currentPage.value);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
 });
 </script>
 
@@ -500,6 +777,41 @@ onMounted(() => {
   border-radius: 10px;
   padding: 10px 14px;
   border: 1px solid #e0e0e0;
+}
+
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  transition: all 0.3s;
+}
+
+.filter-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.reset-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 10px;
+  transition: all 0.3s;
+}
+
+.reset-btn:hover {
+  transform: translateY(-2px);
 }
 
 /* ===== جدول ===== */
@@ -723,6 +1035,91 @@ onMounted(() => {
   justify-content: center;
 }
 
+/* ===== رنگ مشکی برای وضعیت completed ===== */
+.bg-black {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+/* ===== لیبل فیلترها ===== */
+.filter-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6c757d;
+  margin-bottom: 4px;
+  padding-right: 4px;
+}
+
+/* ===== نتایج سرچ شهر ===== */
+.city-results {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.city-result-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: background 0.15s;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.city-result-item:last-child {
+  border-bottom: none;
+}
+
+.city-result-item:hover {
+  background: #f8f9ff;
+  color: #667eea;
+}
+
+.city-result-item small {
+  color: #6c757d;
+  font-size: 0.72rem;
+}
+
+/* ===== باکس شهر انتخاب‌شده ===== */
+.selected-city-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8f9ff;
+  border: 1px solid #667eea;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: #2d3436;
+  font-weight: 600;
+  min-height: 44px;
+}
+
+.btn-clear-city {
+  background: transparent;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.btn-clear-city:hover {
+  color: #a71d2a;
+}
+
 /* ========================================= */
 /* ===== تبلت (کمتر از 992px) ===== */
 /* ========================================= */
@@ -769,6 +1166,16 @@ onMounted(() => {
 
   .print-bulk-btn,
   .add-btn {
+    width: 100%;
+  }
+
+  .filter-actions {
+    width: 100%;
+  }
+
+  .filter-btn,
+  .reset-btn {
+    flex: 1;
     width: 100%;
   }
 }
