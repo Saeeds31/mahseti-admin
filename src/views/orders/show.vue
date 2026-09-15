@@ -168,7 +168,7 @@
 
           <b-form-group label="تغییر وضعیت" label-for="order-status" class="status-form">
             <b-form-select id="order-status" v-model="order.status" :options="orderStatusOptions"
-              :class="getStatusClass(order?.status)" @change="updateOrderStatus" :disabled="updating"
+              :class="getStatusClass(order?.status)"  :disabled="updating"
               class="status-select" />
           </b-form-group>
 

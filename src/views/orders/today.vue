@@ -88,6 +88,7 @@
                     <th>وضعیت سفارش</th>
                     <th>وضعیت پرداخت</th>
                     <th>روش پرداخت</th>
+                    <th>ژمان پرداخت</th>
                     <th>دگاه پرداخت</th>
                     <th style="width: 120px;">عملیات</th>
                   </tr>
@@ -113,6 +114,7 @@
                       </span>
                     </td>
                     <td>{{ paymentMethodText(order.payment_method) }}</td>
+                    <td>{{ new Date(order.updated_at).toLocaleDateString('fa') }}</td>
                     <td>{{
                       order.gateway_transactions && order.gateway_transactions.length ?
                         findGateWayName(order.gateway_transactions) : '-' }}</td>

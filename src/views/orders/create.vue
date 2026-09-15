@@ -214,7 +214,7 @@ const loadUsers = async (search) => {
     });
     userOptions.value = data.data.map(u => ({
         id: u.id,
-        label: u.full_name,
+        label: u.full_name+` - (${u.mobile})`,
         addresses: u.addresses,
         wallet: u.wallet
     }));
