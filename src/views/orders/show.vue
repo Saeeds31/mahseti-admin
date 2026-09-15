@@ -595,7 +595,7 @@ const productOptions = ref([])
 
 const canEdit = computed(() => {
   if (!order.value) return false
-  return !['completed', 'canceled', 'shipped'].includes(order.value.status)
+  return !['completed', 'failed', 'shipped'].includes(order.value.status)
 })
 
 const orderStatusOptions = [
@@ -605,7 +605,7 @@ const orderStatusOptions = [
   { value: "shipped", text: "ارسال شده" },
   { value: "paid", text: "پرداخت شده" },
   { value: "completed", text: "تکمیل شده" },
-  { value: "canceled", text: "لغو شده" },
+  { value: "failed", text: "لغو شده" },
   { value: "returned", text: "مرجوع شده" },
 ]
 
@@ -960,7 +960,7 @@ const getStatusText = (status) => {
     shipped: 'ارسال شده',
     paid: 'پرداخت شده',
     completed: 'تکمیل شده',
-    canceled: 'لغو شده',
+    failed: 'لغو شده',
     returned: 'مرجوع شده'
   }
   return map[status] || status || 'نامشخص'
@@ -973,7 +973,7 @@ const getStatusClass = (status) => {
     processing: 'badge bg-primary text-white',
     shipped: 'badge bg-purple text-white',
     completed: 'badge bg-success text-white',
-    canceled: 'badge bg-danger text-white',
+    failed: 'badge bg-danger text-white',
     returned: 'badge bg-secondary text-white'
   }
   return map[status] || ''

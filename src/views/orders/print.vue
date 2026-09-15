@@ -416,6 +416,7 @@ const STORE_INFO = {
 
 const handlePrint = () => {
     const printContents = document.getElementById('printSection').innerHTML;
+    const fontUrl = `${window.location.origin}/fonts/yekanBakh/bold.ttf`;
 
     const iframe = document.createElement('iframe');
     iframe.style.position = 'fixed';
@@ -429,7 +430,6 @@ const handlePrint = () => {
 
     const doc = iframe.contentWindow.document;
     doc.open();
-    //   src: url(../fonts/yekanBakh/bold.ttf);
     doc.write(`
         <!DOCTYPE html>
         <html dir="rtl">
@@ -438,19 +438,30 @@ const handlePrint = () => {
             <title>پرینت سفارش‌ها</title>
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
             <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
                 @font-face {
                     font-family: 'yekanbakhbold';
-                    src: url('/fonts/yekanBakh/bold.ttf') format('ttf');
+                    src: url('${fontUrl}') format('truetype');
                     font-weight: normal;
                     font-style: normal;
-                   font-display: swap;
+                    font-display: block; /* ✅ مهم: تا لود نشه، متن نشون داده نشه */
                 }
 
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+
+                html, body {
+                    direction: rtl;
+                    font-family: 'yekanbakhbold', Tahoma, Arial, sans-serif !important;
+                    background: #fff;
+                    color: #000;
+                    font-size: 10px;
+                    line-height: 1.5;
+                }
+
+                /* ✅ همه عناصر رو مجبور کن */
                 body, body * {
                     font-family: 'yekanbakhbold', Tahoma, Arial, sans-serif !important;
                 }
-                /* ✅ A4 */
+
                 @page {
                     size: A4 portrait;
                     margin: 8mm;
