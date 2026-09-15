@@ -297,13 +297,15 @@ const goToPrint = () => {
     alert('لطفاً حداقل یک سفارش را انتخاب کنید.');
     return;
   }
-  router.push({
+  const route = router.resolve({
     path: '/orders/print',
     query: {
       ids: selectedOrders.value.join(','),
       type: printType.value
     }
   });
+
+  window.open(route.href, '_blank');
 };
 
 const singlePrint = (orderId) => {

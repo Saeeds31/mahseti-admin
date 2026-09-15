@@ -4,7 +4,8 @@
         <!-- فیلتر -->
         <div class="card mb-2 header-card">
             <div class="card-header">
-                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2 mb-3">
+                <div
+                    class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2 mb-3">
                     <h3 class="mb-0 page-title">
                         <i class="bi bi-wallet"></i>
                         <span>مدیریت کیف پول‌ها</span>
@@ -12,13 +13,8 @@
                 </div>
             </div>
             <div class="card-body">
-                <input
-                    v-model="filters.search"
-                    @input="getWallets"
-                    type="text"
-                    class="form-control search-input"
-                    placeholder="جستجو بر اساس نام کاربر"
-                />
+                <input v-model="filters.search" @input="getWallets" type="text" class="form-control search-input"
+                    placeholder="جستجو بر اساس نام کاربر یا شماره تماس" />
             </div>
         </div>
 
@@ -44,6 +40,7 @@
                                 <tr>
                                     <th>شناسه</th>
                                     <th>کاربر</th>
+                                    <th>شماره تماس</th>
                                     <th>موجودی (تومان)</th>
                                     <th>عملیات</th>
                                 </tr>
@@ -52,16 +49,19 @@
                                 <tr v-for="wallet in wallets.data" :key="wallet.id">
                                     <td>{{ wallet.id }}</td>
                                     <td>{{ wallet.user?.full_name ?? '-' }}</td>
+                                    <td>{{ wallet.user?.mobile ?? '-' }}</td>
                                     <td class="balance-cell">
                                         {{ Number(wallet.balance).toLocaleString('fa-ir') }}
                                     </td>
                                     <td>
                                         <div class="d-flex flex-wrap gap-1">
-                                            <button class="btn btn-sm btn-success" @click="openModal(wallet, 'deposit')">
+                                            <button class="btn btn-sm btn-success"
+                                                @click="openModal(wallet, 'deposit')">
                                                 <i class="bi bi-plus"></i>
                                                 <span>افزایش موجودی</span>
                                             </button>
-                                            <button class="btn btn-sm btn-warning" @click="openModal(wallet, 'withdraw')">
+                                            <button class="btn btn-sm btn-warning"
+                                                @click="openModal(wallet, 'withdraw')">
                                                 <i class="bi bi-dash"></i>
                                                 <span>کاهش موجودی</span>
                                             </button>
@@ -74,11 +74,7 @@
 
                     <!-- ===== نمایش کارتی در موبایل ===== -->
                     <div v-if="wallets.data && wallets.data.length > 0" class="d-md-none wallet-cards">
-                        <div
-                            v-for="wallet in wallets.data"
-                            :key="wallet.id"
-                            class="wallet-card"
-                        >
+                        <div v-for="wallet in wallets.data" :key="wallet.id" class="wallet-card">
                             <div class="wallet-card-header">
                                 <div class="wallet-avatar">
                                     <i class="bi bi-person-fill"></i>
@@ -114,15 +110,9 @@
                     </div>
 
                     <!-- Pagination -->
-                    <b-pagination
-                        v-model="currentPage"
-                        :total-rows="wallets.total"
-                        v-if="wallets.last_page != 1"
-                        :per-page="wallets.per_page"
-                        @Update:modelValue="changePage"
-                        align="center"
-                        class="mt-3 pagination-responsive"
-                    ></b-pagination>
+                    <b-pagination v-model="currentPage" :total-rows="wallets.total" v-if="wallets.last_page != 1"
+                        :per-page="wallets.per_page" @Update:modelValue="changePage" align="center"
+                        class="mt-3 pagination-responsive"></b-pagination>
                 </div>
             </div>
         </div>
@@ -143,21 +133,13 @@
                                     ({{ Number(form.amount).toLocaleString('fa-ir') }} تومان)
                                 </span>
                             </label>
-                            <input
-                                v-model="form.amount"
-                                type="number"
-                                class="form-control"
-                                placeholder="مثلاً 100000"
-                            />
+                            <input v-model="form.amount" type="number" class="form-control"
+                                placeholder="مثلاً 100000" />
                         </div>
                         <div class="mb-3">
                             <label class="form-label">توضیح</label>
-                            <textarea
-                                v-model="form.description"
-                                class="form-control"
-                                rows="3"
-                                placeholder="توضیحات (اختیاری)"
-                            ></textarea>
+                            <textarea v-model="form.description" class="form-control" rows="3"
+                                placeholder="توضیحات (اختیاری)"></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">

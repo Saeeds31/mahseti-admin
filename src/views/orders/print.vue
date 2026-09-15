@@ -429,7 +429,7 @@ const handlePrint = () => {
 
     const doc = iframe.contentWindow.document;
     doc.open();
-
+    //   src: url(../fonts/yekanBakh/bold.ttf);
     doc.write(`
         <!DOCTYPE html>
         <html dir="rtl">
@@ -439,7 +439,17 @@ const handlePrint = () => {
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
             <style>
                 * { margin: 0; padding: 0; box-sizing: border-box; }
+                @font-face {
+                    font-family: 'yekanbakhbold';
+                    src: url('/fonts/yekanBakh/bold.ttf') format('ttf');
+                    font-weight: normal;
+                    font-style: normal;
+                   font-display: swap;
+                }
 
+                body, body * {
+                    font-family: 'yekanbakhbold', Tahoma, Arial, sans-serif !important;
+                }
                 /* ✅ A4 */
                 @page {
                     size: A4 portrait;
@@ -892,6 +902,10 @@ onMounted(() => {
         #f6f6f5;
     color: #18181b;
     direction: rtl;
+}
+
+.print-wrapper * {
+    font-family: "yekanbakhbold" !important;
 }
 
 /* =========================================================
@@ -1617,6 +1631,7 @@ onMounted(() => {
    PRINT SCREEN
 ========================================================= */
 @media print {
+
     .print-wrapper {
         background: #fff;
     }
