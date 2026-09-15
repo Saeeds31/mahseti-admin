@@ -120,6 +120,12 @@ const menuItems = ref([
         icon: "bi-list-ul"
       },
       {
+        name: "ادغام کاربران",
+        permissions: ['user_view'],
+        link: "/users/duplicates",
+        icon: "bi-list-ul"
+      },
+      {
         name: "نقش ها",
         permissions: ['role_view'],
         link: "/users/roles",

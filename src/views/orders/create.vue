@@ -214,7 +214,7 @@ const loadUsers = async (search) => {
     });
     userOptions.value = data.data.map(u => ({
         id: u.id,
-        label: u.full_name+` - (${u.mobile})`,
+        label: u.full_name + ` - (${u.mobile})`,
         addresses: u.addresses,
         wallet: u.wallet
     }));
@@ -227,7 +227,7 @@ const loadProducts = async (search) => {
         abortController1.abort();
     }
     abortController1 = new AbortController();
-    const { data } = await axios.get('/products', {
+    const { data } = await axios.get('/products-search', {
         params: { search },
         signal: abortController1.signal,
     });
@@ -238,7 +238,8 @@ async function convertToSelectableProduct(productList) {
     let finalList = [];
     productList.forEach(product => {
         if (product.variants.length > 1) {
-            product.variants.forEach((variant) => {
+            product.variants.filter(a => a.stock).forEach((variant) => {
+
                 let obj = {
                     id: variant.id,
                     product_id: product.id,
@@ -248,7 +249,7 @@ async function convertToSelectableProduct(productList) {
                 };
                 finalList.push(obj);
             });
-        } else {
+        } else if (product.variants.length == 1 && product.variants[0].stock != 0) {
             let obj = {
                 isDisabled: product.variants[0].stock > 0 ? false : true,
                 id: product.variants[0].id,

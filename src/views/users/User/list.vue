@@ -17,7 +17,7 @@
             <div class="card-body">
                 <input
                     v-model="filters.search"
-                    @input="getUsers"
+                    @input="onSearchInput"
                     type="text"
                     class="form-control search-input"
                     placeholder="جستجو بر اساس نام یا موبایل"
@@ -145,7 +145,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useRoute, useRouter } from "vue-router";
@@ -161,6 +161,23 @@ const filters = ref({ search: "" });
 const currentPage = ref(1);
 
 let abortController = null;
+let searchDebounce = null;
+
+// ===== ساخت query string از state =====
+const buildQuery = (page = 1, search = "") => {
+    const q = {};
+    if (page && Number(page) > 1) q.page = String(page);
+    if (search && search.trim() !== "") q.search = search.trim();
+    return q;
+};
+
+// ===== sync کردن URL با state =====
+const syncUrl = (page, search) => {
+    const query = buildQuery(page, search);
+    if (JSON.stringify(route.query) !== JSON.stringify(query)) {
+        router.replace({ name: route.name, query });
+    }
+};
 
 const getUsers = async (page = 1) => {
     loading.value = true;
@@ -193,10 +210,21 @@ const getUsers = async (page = 1) => {
     }
 };
 
+// ===== هندل کردن سرچ با debounce =====
+const onSearchInput = () => {
+    if (searchDebounce) clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+        currentPage.value = 1;
+        syncUrl(1, filters.value.search);
+        getUsers(1);
+    }, 400);
+};
+
 const changePage = (page) => {
     if (page) {
-        router.replace({ name: route.name, query: { page: page } })
-        getUsers(page)
+        currentPage.value = page;
+        syncUrl(page, filters.value.search);
+        getUsers(page);
     }
 };
 
@@ -217,9 +245,28 @@ const confirmDelete = (id) => {
     });
 };
 
+// ===== واکنش به تغییرات URL (back/forward مرورگر) =====
+watch(
+    () => route.query,
+    (newQuery) => {
+        const page = Number(newQuery.page) || 1;
+        const search = newQuery.search || "";
+
+        if (String(page) !== String(currentPage.value) || search !== filters.value.search) {
+            filters.value.search = search;
+            currentPage.value = page;
+            getUsers(page);
+        }
+    }
+);
+
 onMounted(() => {
-    currentPage.value = route.query.page ?? 1;
-    getUsers(currentPage.value);
+    const page = Number(route.query.page) || 1;
+    const search = route.query.search || "";
+
+    filters.value.search = search;
+    currentPage.value = page;
+    getUsers(page);
 });
 </script>
 

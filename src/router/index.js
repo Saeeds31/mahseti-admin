@@ -283,6 +283,11 @@ const routes = [
     name: "shop-shipping-edit",
     component: () => import("@/views/shop/Shipping/edit.vue"),
   },
+  {
+    path: "/users/duplicates",
+    name: "shop-DuplicateUsers",
+    component: () => import("@/views/users/User/DuplicateUsers.vue"),
+  },
   //
 
   {
