@@ -64,7 +64,7 @@
                     <th>تعداد</th>
                     <th>کاربر اصلی</th>
                     <th>کاربران تکراری</th>
-                    <th style="width: 130px;">عملیات</th>
+                    <th style="width: 200px;">عملیات</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -115,13 +115,26 @@
                     </td>
 
                     <td>
-                      <button
-                        @click="openMergeModal(group)"
-                        class="btn btn-sm btn-primary w-100 merge-btn"
-                      >
-                        <i class="bi bi-shuffle"></i>
-                        <span>ادغام</span>
-                      </button>
+                      <div class="d-flex gap-1">
+                        <button
+                          @click="openMergeModal(group)"
+                          class="btn btn-sm btn-primary flex-fill merge-btn"
+                          title="ادغام با انتخاب دستی"
+                        >
+                          <i class="bi bi-shuffle"></i>
+                          <span>ادغام</span>
+                        </button>
+                        <button
+                          @click="quickMerge(group)"
+                          class="btn btn-sm btn-success flex-fill merge-btn"
+                          :disabled="quickMerging === group.normalized_mobile"
+                          title="ادغام سریع همه تکراری‌ها"
+                        >
+                          <span v-if="quickMerging === group.normalized_mobile" class="spinner-border spinner-border-sm"></span>
+                          <i v-else class="bi bi-lightning-charge-fill"></i>
+                          <span>سریع</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -165,10 +178,21 @@
                   </div>
                 </div>
 
-                <button @click="openMergeModal(group)" class="btn btn-primary w-100 mt-2">
-                  <i class="bi bi-shuffle"></i>
-                  <span>ادغام</span>
-                </button>
+                <div class="d-flex gap-2 mt-2">
+                  <button @click="openMergeModal(group)" class="btn btn-primary flex-fill">
+                    <i class="bi bi-shuffle"></i>
+                    <span>ادغام</span>
+                  </button>
+                  <button
+                    @click="quickMerge(group)"
+                    class="btn btn-success flex-fill"
+                    :disabled="quickMerging === group.normalized_mobile"
+                  >
+                    <span v-if="quickMerging === group.normalized_mobile" class="spinner-border spinner-border-sm"></span>
+                    <i v-else class="bi bi-lightning-charge-fill"></i>
+                    <span>سریع</span>
+                  </button>
+                </div>
               </div>
             </div>
           </template>
@@ -236,17 +260,48 @@
           <div class="modal-section">
             <label class="modal-label">
               <i class="bi bi-people"></i>
-              کاربر تکراری که حذف می‌شود:
+              کاربران تکراری که حذف می‌شوند (چندتایی قابل انتخاب):
             </label>
+
+            <!-- دکمه انتخاب/حذف همه -->
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <small class="text-muted">
+                انتخاب شده: {{ selectedDuplicateIds.length }} از {{ getDuplicates(selectedGroup).length }}
+              </small>
+              <button
+                v-if="selectedDuplicateIds.length < getDuplicates(selectedGroup).length"
+                class="btn btn-sm btn-outline-primary"
+                @click="selectAllDuplicates"
+                type="button"
+              >
+                <i class="bi bi-check-all"></i>
+                انتخاب همه
+              </button>
+              <button
+                v-else
+                class="btn btn-sm btn-outline-secondary"
+                @click="clearAllDuplicates"
+                type="button"
+              >
+                <i class="bi bi-x-lg"></i>
+                حذف انتخاب همه
+              </button>
+            </div>
+
             <div class="duplicates-checkbox-list">
               <div
                 v-for="u in getDuplicates(selectedGroup)"
                 :key="u.id"
                 class="duplicate-checkbox-item"
-                :class="{ selected: selectedDuplicateId === u.id }"
-                @click="selectedDuplicateId = u.id"
+                :class="{ selected: selectedDuplicateIds.includes(u.id) }"
+                @click="toggleDuplicate(u.id)"
               >
-                <input type="radio" :value="u.id" v-model="selectedDuplicateId" />
+                <input
+                  type="checkbox"
+                  :value="u.id"
+                  :checked="selectedDuplicateIds.includes(u.id)"
+                  @click.stop="toggleDuplicate(u.id)"
+                />
                 <div class="user-info">
                   <div class="user-name">{{ u.full_name || 'نامشخص' }}</div>
                   <div class="user-meta">
@@ -270,7 +325,7 @@
             <i class="bi bi-exclamation-triangle-fill"></i>
             <div>
               <strong>هشدار:</strong>
-              کاربر تکراری حذف می‌شود و تمام آدرس‌ها، سفارش‌ها، کیف پول و تراکنش‌هایش
+              کاربران تکراری انتخاب‌شده حذف می‌شوند و تمام آدرس‌ها، سفارش‌ها، کیف پول و تراکنش‌هایشان
               به کاربر اصلی منتقل می‌شوند. این عملیات قابل بازگشت نیست.
             </div>
           </div>
@@ -283,7 +338,7 @@
           <button
             @click="confirmMerge"
             class="btn btn-danger"
-            :disabled="!selectedDuplicateId || merging"
+            :disabled="selectedDuplicateIds.length === 0 || merging"
           >
             <span v-if="merging">
               <span class="spinner-border spinner-border-sm me-1"></span>
@@ -291,7 +346,7 @@
             </span>
             <span v-else>
               <i class="bi bi-check-lg"></i>
-              تأیید و ادغام
+              تأیید و ادغام ({{ selectedDuplicateIds.length }})
             </span>
           </button>
         </div>
@@ -318,8 +373,9 @@ const currentPage  = ref(1);
 // مودال
 const showModal           = ref(false);
 const selectedGroup       = ref(null);
-const selectedDuplicateId = ref(null);
+const selectedDuplicateIds = ref([]);
 const merging             = ref(false);
+const quickMerging        = ref(null);
 
 // Toast
 const toast = ref({ show: false, type: 'success', message: '' });
@@ -367,6 +423,13 @@ function changePage(page) {
   if (page) loadDuplicates(page);
 }
 
+function removeGroupFromList(normalizedMobile) {
+  duplicates.value.data = duplicates.value.data.filter(
+    g => g.normalized_mobile !== normalizedMobile
+  );
+  duplicates.value.total = Math.max(0, duplicates.value.total - 1);
+}
+
 function openMergeModal(group) {
   selectedGroup.value = group;
 
@@ -376,7 +439,7 @@ function openMergeModal(group) {
     return;
   }
 
-  selectedDuplicateId.value = dups[0].id;
+  selectedDuplicateIds.value = dups.map(u => u.id);
   showModal.value = true;
 }
 
@@ -384,24 +447,71 @@ function closeModal() {
   if (merging.value) return;
   showModal.value = false;
   selectedGroup.value = null;
-  selectedDuplicateId.value = null;
+  selectedDuplicateIds.value = [];
+}
+
+function toggleDuplicate(id) {
+  const idx = selectedDuplicateIds.value.indexOf(id);
+  if (idx === -1) {
+    selectedDuplicateIds.value.push(id);
+  } else {
+    selectedDuplicateIds.value.splice(idx, 1);
+  }
+}
+
+function selectAllDuplicates() {
+  const dups = getDuplicates(selectedGroup.value);
+  selectedDuplicateIds.value = dups.map(u => u.id);
+}
+
+function clearAllDuplicates() {
+  selectedDuplicateIds.value = [];
+}
+
+async function quickMerge(group) {
+  const dups = getDuplicates(group);
+  if (dups.length === 0) {
+    showToast("کاربری برای ادغام یافت نشد.", "error");
+    return;
+  }
+
+  quickMerging.value = group.normalized_mobile;
+
+  try {
+    const resp = await axios.post("/users-merge", {
+      primary_id:    getPrimary(group).id,
+      duplicate_ids: dups.map(u => u.id),
+    });
+
+    if (resp.data.success) {
+      showToast(resp.data.message || "ادغام با موفقیت انجام شد.", "success");
+      removeGroupFromList(group.normalized_mobile);
+    } else {
+      showToast(resp.data.message || "خطا در ادغام", "error");
+    }
+  } catch (e) {
+    showToast(e.response?.data?.message || "خطا در ادغام", "error");
+  } finally {
+    quickMerging.value = null;
+  }
 }
 
 async function confirmMerge() {
-  if (!selectedDuplicateId.value || !selectedGroup.value) return;
+  if (selectedDuplicateIds.value.length === 0 || !selectedGroup.value) return;
 
   merging.value = true;
 
   try {
     const resp = await axios.post("/users-merge", {
-      primary_id:   getPrimary(selectedGroup.value).id,
-      duplicate_id: selectedDuplicateId.value,
+      primary_id:     getPrimary(selectedGroup.value).id,
+      duplicate_ids:  selectedDuplicateIds.value,
     });
 
     if (resp.data.success) {
-      showToast("ادغام با موفقیت انجام شد.", "success");
+      showToast(resp.data.message || "ادغام با موفقیت انجام شد.", "success");
+      const normalizedMobile = selectedGroup.value.normalized_mobile;
       closeModal();
-      loadDuplicates(currentPage.value);
+      removeGroupFromList(normalizedMobile);
     } else {
       showToast(resp.data.message || "خطا در ادغام", "error");
     }
@@ -735,12 +845,13 @@ onMounted(() => {
   background: #f0f4ff;
 }
 
-.duplicate-checkbox-item input[type="radio"] {
+.duplicate-checkbox-item input[type="checkbox"] {
   margin-top: 4px;
   accent-color: #667eea;
   width: 18px;
   height: 18px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .alert-warning-custom {
