@@ -100,7 +100,7 @@
                     <span :class="product.status == 'published' ? 'badge bg-success' : 'badge bg-secondary'">
                       {{ product.status == 'published' ? 'موجود' :
                          product.status == 'unpublished' ? 'ناموجود' :
-                         product.published_at ? `انتشار در ${new Date(product.published_at).toLocaleDateString('fa-IR')}` :
+                         product.published_at ? `انتشار در ${new Date(product.published_at).toLocaleString('fa-IR')}` :
                          'پیش‌نویس' }}
                     </span>
                   </td>

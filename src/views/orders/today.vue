@@ -88,8 +88,8 @@
                     <th>وضعیت سفارش</th>
                     <th>وضعیت پرداخت</th>
                     <th>روش پرداخت</th>
-                    <th>ژمان پرداخت</th>
-                    <th>دگاه پرداخت</th>
+                    <th>زمان پرداخت</th>
+                    <th>درگاه پرداخت</th>
                     <th style="width: 120px;">عملیات</th>
                   </tr>
                 </thead>
@@ -409,6 +409,8 @@ function findGateWayName(gateway_transactions) {
     parsian: 'پارسیان',
     zarinpal: 'زرین پال',
   }
+  if (gateway_transactions.length == 1)
+    return names[gateway_transactions[0].gateway]
   let finded = gateway_transactions.find(i => i.status == "paid")
   if (finded)
     return names[finded.gateway]

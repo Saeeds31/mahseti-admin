@@ -288,6 +288,12 @@ const routes = [
     name: "shop-DuplicateUsers",
     component: () => import("@/views/users/User/DuplicateUsers.vue"),
   },
+
+  {
+    path: "/orders/problematic",
+    name: "orders-problematic",
+    component: () => import("@/views/orders/problematic.vue"),
+  },
   //
 
   {

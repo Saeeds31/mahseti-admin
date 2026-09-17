@@ -231,6 +231,8 @@ const menuItems = ref([
         link: "/reports/orders",
         icon: "bi-basket"
       },
+
+
       {
         name: "محصولات",
         permissions: ['report_products'],
@@ -358,6 +360,12 @@ const menuItems = ref([
         permissions: ['order_today'],
         link: "/orders/today",
         icon: "bi-calendar-day"
+      },
+      {
+        name: "سفارشات خطادار",
+        permissions: ['order_view'],
+        link: "/orders/problematic",
+        icon: "bi-basket"
       },
       {
         name: "لیست",
