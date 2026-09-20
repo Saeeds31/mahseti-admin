@@ -17,7 +17,7 @@
             <!-- موبایل -->
             <div class="col-md-6">
                 <label class="form-label">شماره موبایل</label>
-                <input disabled v-model="form.mobile" type="text" class="form-control" required maxlength="11"
+                <input  v-model="form.mobile" type="text" class="form-control" required maxlength="11"
                     minlength="11" />
                 <small v-if="errors.mobile" class="text-danger">{{ errors.mobile[0] }}</small>
             </div>

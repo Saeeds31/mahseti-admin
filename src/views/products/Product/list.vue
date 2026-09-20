@@ -81,9 +81,9 @@
                   <td>
                     <div class="imageBox">
                       <img :src="imageResolver(product.main_image)" width="64" alt="">
-                      <span class="counterImages" v-if="product.images">
+                      <!-- <span class="counterImages" v-if="product.images">
                         {{ product.images.length }}
-                      </span>
+                      </span> -->
                     </div>
                   </td>
                   <td class="product-title">{{ product.title }}</td>
