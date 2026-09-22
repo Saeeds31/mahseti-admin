@@ -51,7 +51,7 @@
             <span class="info-value">
               <span class="value-text">{{ getAddressText(order?.address) }} <span><b> -کدپستی: </b>{{
                 order?.address?.postal_code
-              }}</span>
+                  }}</span>
                 <span><b> -شماره تماس: </b>{{
                   order?.address?.phone
                 }}</span>
@@ -75,7 +75,7 @@
               <span class="value-text">
                 <i class="fas fa-truck me-1"></i>
                 {{ order?.shipping?.title || 'نامشخص' }}
-                <span class="text-muted ms-1">({{ formatPrice(order?.shipping?.cost) }})</span>
+                <span class="text-muted ms-1">({{ formatPrice(order?.shipping_cost) }})</span>
               </span>
               <b-button v-if="canEdit" variant="outline-primary" size="sm" class="edit-btn"
                 @click="showShippingModalFunc()" title="ویرایش روش حمل">
@@ -147,7 +147,7 @@
               توضیحات
             </span>
             <span class="info-value">
-              <span >{{ order?.user_note }}</span>
+              <span>{{ order?.user_note }}</span>
             </span>
           </div>
           <div v-if="order?.status == 'reserved'" class="alert alert-info mt-3 mb-0 reserved-alert">
@@ -168,8 +168,7 @@
 
           <b-form-group label="تغییر وضعیت" label-for="order-status" class="status-form">
             <b-form-select id="order-status" v-model="order.status" :options="orderStatusOptions"
-              :class="getStatusClass(order?.status)"  :disabled="updating"
-              class="status-select" />
+              :class="getStatusClass(order?.status)" :disabled="updating" class="status-select" />
           </b-form-group>
 
           <div class="mt-3 d-grid gap-2 action-buttons">
@@ -409,7 +408,7 @@
                   <i class="bi bi-truck"></i>
                   هزینه ارسال
                 </span>
-                <span class="info-value">{{ formatPrice(order?.shipping?.cost) }}</span>
+                <span class="info-value">{{ formatPrice(order?.shipping_cost) }}</span>
               </div>
 
               <hr class="my-2">
@@ -426,7 +425,74 @@
         </b-card>
       </b-col>
     </b-row>
+    <!-- ===== سفارشات فرزند ===== -->
+    <b-row v-if="order?.child_orders?.length" class="mt-3 mt-md-4">
+      <b-col cols="12">
+        <b-card class="detail-card" header-tag="header">
+          <template #header>
+            <div class="d-flex align-items-center flex-wrap gap-2">
+              <i class="fas fa-sitemap me-2 text-info"></i>
+              <span class="fw-bold">سفارشات فرزند</span>
+              <span class="badge bg-info items-badge">
+                <i class="bi bi-diagram-3 me-1"></i>
+                {{ order.child_orders.length }} سفارش
+              </span>
+            </div>
+          </template>
 
+          <div v-for="child in order.child_orders" :key="child.id" class="child-order-block mb-3">
+            <!-- هدر سفارش فرزند -->
+            <div class="child-order-header d-flex flex-wrap align-items-center justify-content-between gap-2 p-2 mb-2">
+              <div>
+                <span class="badge bg-primary me-2">#{{ child.id }}</span>
+                <span :class="getStatusClass(child.status)">{{ getStatusText(child.status) }}</span>
+                <small class="text-muted ms-2">
+                  <i class="bi bi-calendar-check me-1"></i>
+                  {{ formatDate(child.created_at) }}
+                </small>
+              </div>
+              <div class="fw-bold text-success">
+                {{ formatPrice(child.total) }}
+              </div>
+            </div>
+
+            <!-- آیتم‌های سفارش فرزند -->
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered align-middle text-center mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width: 50px;">#</th>
+                    <th style="width: 60px;">تصویر</th>
+                    <th class="text-start">محصول</th>
+                    <th style="width: 80px;">تعداد</th>
+                    <th style="width: 120px;">قیمت واحد</th>
+                    <th style="width: 120px;">مجموع</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item, index) in child.items || []" :key="item.id">
+                    <td class="row-index">{{ index + 1 }}</td>
+                    <td>
+                      <img width="50" height="50" class="product-thumb" :src="getProductImage(item)"
+                        :alt="getProductTitle(item)" />
+                    </td>
+                    <td class="text-start">
+                      <span class="fw-bold product-title">{{ getProductTitle(item) }}</span>
+                      <div class="text-muted small variant-text">{{ getVariantText(item) }}</div>
+                    </td>
+                    <td><span class="quantity-badge">{{ item.quantity }}</span></td>
+                    <td><span class="price-text">{{ formatPrice(item.price) }}</span></td>
+                    <td class="fw-bold total-cell">
+                      {{ formatPrice((item.price || 0) * (item.quantity || 0)) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </b-card>
+      </b-col>
+    </b-row>
     <!-- ===== مودال ویرایش آدرس ===== -->
     <Modal v-if="showAddressModal" id="addressModal" @closeModal="() => { showAddressModal = false }"
       title="ویرایش آدرس">
@@ -629,7 +695,7 @@ function showShippingModalFunc() {
   shippingForm.value.current_shipping = {
     id: order.value.shipping_id,
     title: order.value.shipping?.title,
-    cost: order.value.shipping?.cost
+    cost: order.value.shipping_cost
   }
 }
 const loadAddresses = async () => {
@@ -687,7 +753,7 @@ const loadShippings = async () => {
     shippingForm.value.current_shipping = {
       id: order.value.shipping_id,
       title: order.value.shipping?.title,
-      cost: order.value.shipping?.cost
+      cost: order.value.shipping_cost
     }
   } catch (error) {
     console.error('Error loading shippings:', error)

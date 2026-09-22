@@ -155,7 +155,7 @@
                                 </div>
                             </div>
 
-                            <!-- ===== جدول آیتم‌ها ===== -->
+                            <!-- ===== جدول آیتم‌ها (اصلی + فرزند) ===== -->
                             <div class="box box-table">
                                 <table class="items-table">
                                     <thead>
@@ -170,6 +170,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <!-- آیتم‌های سفارش اصلی -->
                                         <tr v-for="(item, idx) in order.items" :key="item.id">
                                             <td class="cell-specs">
                                                 <template v-if="item.variant?.values?.length">
@@ -190,12 +191,40 @@
                                             <td class="cell-total">{{ Number(item.price *
                                                 item.quantity).toLocaleString('fa-IR') }}</td>
                                         </tr>
-                                        <tr v-if="!order.items?.length">
+
+                                        <!-- آیتم‌های سفارشات فرزند (ادامه شماره‌گذاری) -->
+                                        <template v-for="child in order.child_orders || []" :key="'child-' + child.id">
+                                            <tr v-for="(item, cidx) in child.items" :key="item.id">
+                                                <td class="cell-specs">
+                                                    <template v-if="item.variant?.values?.length">
+                                                        <span v-for="val in item.variant.values" :key="val.id"
+                                                            class="spec-line">
+                                                            {{ val.attribute ? val.attribute.name + ' ' : '' }}{{
+                                                                val.value }}
+                                                        </span>
+                                                    </template>
+                                                    <span v-else class="muted">-</span>
+                                                </td>
+                                                <td class="cell-index">
+                                                    {{ String((order.items?.length || 0) + cidx + 1).padStart(2, '0') }}
+                                                </td>
+                                                <td class="cell-product">{{ item.product?.title ?? '-' }}</td>
+                                                <td class="cell-price">{{ Number(item.price).toLocaleString('fa-IR') }}
+                                                </td>
+                                                <td class="cell-discount">{{ Number(item.discount ??
+                                                    0).toLocaleString('fa-IR') }}</td>
+                                                <td class="cell-qty">{{ item.quantity }}</td>
+                                                <td class="cell-total">{{ Number(item.price *
+                                                    item.quantity).toLocaleString('fa-IR') }}</td>
+                                            </tr>
+                                        </template>
+
+                                        <tr v-if="!order.items?.length && !order.child_orders?.length">
                                             <td colspan="7" class="text-center muted">بدون آیتم</td>
                                         </tr>
                                     </tbody>
                                     <!-- ✅ ردیف تعداد کل -->
-                                    <tfoot v-if="order.items?.length">
+                                    <tfoot v-if="order.items?.length || order.child_orders?.length">
                                         <tr class="items-total-row">
                                             <td colspan="7">
                                                 <strong>تعداد کل: {{ getTotalQuantity(order) }}</strong>
@@ -400,10 +429,20 @@ const getCurrentDate = () => {
     });
 };
 
-// ✅ تعداد کل آیتم‌های سفارش
+// ✅ تعداد کل آیتم‌های سفارش (اصلی + فرزند)
 const getTotalQuantity = (order) => {
-    if (!order?.items?.length) return 0;
-    return order.items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+    let total = 0;
+    if (order?.items?.length) {
+        total += order.items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+    }
+    if (order?.child_orders?.length) {
+        order.child_orders.forEach(child => {
+            if (child?.items?.length) {
+                total += child.items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+            }
+        });
+    }
+    return total;
 };
 
 // ✅ اطلاعات ثابت فروشگاه
@@ -443,7 +482,7 @@ const handlePrint = () => {
                     src: url('${fontUrl}') format('truetype');
                     font-weight: normal;
                     font-style: normal;
-                    font-display: block; /* ✅ مهم: تا لود نشه، متن نشون داده نشه */
+                    font-display: block;
                 }
 
                 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -457,7 +496,6 @@ const handlePrint = () => {
                     line-height: 1.5;
                 }
 
-                /* ✅ همه عناصر رو مجبور کن */
                 body, body * {
                     font-family: 'yekanbakhbold', Tahoma, Arial, sans-serif !important;
                 }
@@ -465,15 +503,6 @@ const handlePrint = () => {
                 @page {
                     size: A4 portrait;
                     margin: 8mm;
-                }
-
-                body {
-                    direction: rtl;
-                    font-family: IRANSans, "IRANSansX", Tahoma, Arial, sans-serif;
-                    background: #fff;
-                    color: #000;
-                    font-size: 10px;
-                    line-height: 1.5;
                 }
 
                 /* ✅ دو سفارش در یک برگه A4 */
@@ -486,7 +515,6 @@ const handlePrint = () => {
                     break-inside: avoid;
                 }
 
-                /* ✅ بعد از هر ۲ سفارش، صفحه جدید */
                 .invoice-a4:nth-child(2n) {
                     page-break-after: always;
                     break-after: page;
@@ -716,7 +744,6 @@ const handlePrint = () => {
                     border-left: none;
                 }
 
-                /* ✅ مبلغ نهایی - مشکی پررنگ */
                 .summary-cell.highlight {
                     background: #000 !important;
                     color: #fff !important;
