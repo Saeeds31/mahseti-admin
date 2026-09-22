@@ -379,6 +379,12 @@ const menuItems = ref([
         link: "/orders/create",
         icon: "bi-plus-square"
       },
+        {
+        name: "رسیدهای کارت به کارت",
+        permissions: ['cardtocard_view'],
+        link: "/card-transfer/receipts",
+        icon: "bi-receipt-cutoff"
+      }
     ],
   },
   {
