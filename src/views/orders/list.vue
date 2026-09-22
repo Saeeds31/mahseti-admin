@@ -132,7 +132,7 @@
               <option value="online">پرداخت آنلاین</option>
               <option value="wallet">کیف پول</option>
               <option value="card_transfer">کارت به کارت</option>
-
+              
               <option value="cod">پرداخت در محل</option>
             </select>
           </div>
