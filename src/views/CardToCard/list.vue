@@ -67,6 +67,7 @@
                                 <th>وضعیت رسید</th>
                                 <th>تاریخ آپلود</th>
                                 <th>عملیات</th>
+                                <th>نظارت</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -96,24 +97,34 @@
                                     <!-- دکمه‌های تایید و رد (فقط برای وضعیت pending) -->
                                     <template v-if="checkPermission(['cardtocard_update'])">
 
-                                        <div v-if="receipt.status === 'pending'" class="d-flex gap-1">
-                                            <button class="btn btn-sm btn-success" @click="approveReceipt(receipt)">
+                                        <div class="d-flex flex-column gap-1">
+
+                                            <button
+                                                v-if="receipt.status != 'send_again' && receipt.status != 'rejected'"
+                                                class="btn btn-sm btn-warning" @click="sendAgainReceipt(receipt)">
+                                                <i class="bi bi-check-circle"></i>
+                                                رد و ارسال مجدد
+                                            </button>
+                                            <button v-if="receipt.status != 'approved' && receipt.status != 'rejected'"
+                                                class="btn btn-sm btn-success" @click="approveReceipt(receipt)">
                                                 <i class="bi bi-check-circle"></i>
                                                 تایید
                                             </button>
-                                            <button class="btn btn-sm btn-danger" @click="rejectReceipt(receipt)">
+                                            <button class="btn btn-sm btn-danger" v-if="receipt.status != 'rejected'"
+                                                @click="rejectReceipt(receipt)">
                                                 <i class="bi bi-x-circle"></i>
-                                                رد
+                                                رد کامل رسید و سفارش
                                             </button>
                                         </div>
-                                        <span v-else class="text-muted">
-                                            {{ receipt.admin ? `بررسی شده توسط ${receipt.admin.full_name}` : '—' }}
-                                        </span>
                                     </template>
-                                    <span v-else class="text-muted">
-                                        شما اجازه تایید یا عدم تایید ندارید
-                                    </span>
 
+
+                                </td>
+                                <td>
+                                    <span>
+                                        {{ receipt.admin ? `بررسی شده توسط ${receipt.admin.full_name}` : '—' }}
+
+                                    </span>
                                 </td>
                             </tr>
                         </tbody>
@@ -208,6 +219,7 @@ function resetFilters() {
     getReceipts();
 }
 
+
 // تایید رسید
 function approveReceipt(receipt) {
     Swal.fire({
@@ -234,6 +246,43 @@ function approveReceipt(receipt) {
     });
 }
 
+function sendAgainReceipt(receipt) {
+    Swal.fire({
+        title: "رد رسید برای بارگذاری مجدد",
+        text: "لطفاً دلیل رد رسید را وارد کنید:",
+        icon: "warning",
+        input: "text",
+        inputPlaceholder: "مثال: رسید نامشخص است",
+        inputAttributes: {
+            'aria-label': 'توضیح دلیل رد'
+        },
+        showCancelButton: true,
+        confirmButtonText: "بله، رد شود",
+        cancelButtonText: "انصراف",
+        preConfirm: (value) => {
+            if (!value || value.trim() === '') {
+                Swal.showValidationMessage('لطفاً دلیل رد را وارد کنید');
+                return false;
+            }
+            return value.trim();
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed && result.value) {
+            try {
+                await axios.put(`/card-transfer/receipt/${receipt.id}/review`, {
+                    status: 'send_again',
+                    description: result.value
+                });
+
+                Swal.fire("موفق", "رسید با موفقیت رد شد", "success");
+                getReceipts();
+            } catch (err) {
+                console.error("Error rejecting receipt:", err);
+                Swal.fire("خطا", err.response?.data?.message || "مشکلی در رد رسید پیش آمد", "error");
+            }
+        }
+    });
+}
 // رد رسید
 function rejectReceipt(receipt) {
     Swal.fire({
@@ -309,6 +358,7 @@ function getStatusLabel(status) {
     const map = {
         pending: "در انتظار بررسی",
         approved: "تأیید شده",
+        send_again: "در انتظار ارسال مجدد رسید",
         rejected: "رد شده"
     };
     return map[status] || status;

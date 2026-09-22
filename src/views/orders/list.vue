@@ -106,6 +106,9 @@
               <option value="completed">تکمیل شده</option>
               <option value="failed">لغو شده</option>
               <option value="returned">مرجوعی</option>
+              <option value="card_transfer_pending">در انتظار آپلود رسید</option>
+              <option value="card_transfer_review">در حال پردازش رسید</option>
+              <option value="card_transfer_send_again">در انتظار آپلود مجدد رسید</option>
             </select>
           </div>
 
@@ -128,6 +131,8 @@
               <option value="">روش پرداخت</option>
               <option value="online">پرداخت آنلاین</option>
               <option value="wallet">کیف پول</option>
+              <option value="card_transfer">کارت به کارت</option>
+
               <option value="cod">پرداخت در محل</option>
             </select>
           </div>
@@ -606,6 +611,9 @@ const statusText = (status) => {
     paid: "پرداخت شده",
     shipped: "ارسال شده",
     completed: "تکمیل شده",
+    card_transfer_pending: "در انتظار آپلود رسید",
+    card_transfer_review: "در حال پردازش رسید",
+    card_transfer_send_again: "در انتظار آپلود مجدد رسید",
     failed: "لغو شده",
     returned: "مرجوعی",
   };
@@ -650,6 +658,7 @@ const paymentMethodText = (method) => {
   const map = {
     online: "پرداخت آنلاین",
     wallet: "کیف پول",
+    card_transfer: "کارت به کارت",
     cod: "پرداخت در محل",
   };
   return map[method] ?? method;
