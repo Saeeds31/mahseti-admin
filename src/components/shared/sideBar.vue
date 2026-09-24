@@ -150,6 +150,12 @@ const menuItems = ref([
         link: "/wallets",
         icon: "bi-list-ul"
       },
+      {
+        name: "تراکنش ها",
+        permissions: ['wallettransaction_view'],
+        link: "/wallet/transactions",
+        icon: "bi-list-ul"
+      },
     ],
   },
   {
@@ -379,7 +385,7 @@ const menuItems = ref([
         link: "/orders/create",
         icon: "bi-plus-square"
       },
-        {
+      {
         name: "رسیدهای کارت به کارت",
         permissions: ['cardtocard_view'],
         link: "/card-transfer/receipts",
