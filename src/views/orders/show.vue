@@ -51,7 +51,7 @@
             <span class="info-value">
               <span class="value-text">{{ getAddressText(order?.address) }} <span><b> -کدپستی: </b>{{
                 order?.address?.postal_code
-                  }}</span>
+              }}</span>
                 <span><b> -شماره تماس: </b>{{
                   order?.address?.phone
                 }}</span>
@@ -450,6 +450,10 @@
                   <i class="bi bi-calendar-check me-1"></i>
                   {{ formatDate(child.created_at) }}
                 </small>
+              </div>
+              <div>
+                هزینه حمل و نقل:
+                {{ formatPrice(child.shipping_cost) }}
               </div>
               <div class="fw-bold text-success">
                 {{ formatPrice(child.total) }}
