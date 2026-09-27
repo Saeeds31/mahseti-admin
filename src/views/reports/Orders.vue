@@ -670,11 +670,11 @@ const dailyChartData = computed(() => {
 });
 
 const monthlyChartData = computed(() => {
-  const data = charts.value.monthly_sales || [];
+  const data = (charts.value.monthly_sales || []).filter(d => d.month);
   if (!data.length) return null;
-  
+
   const sorted = [...data].sort((a, b) => a.month.localeCompare(b.month));
-  
+
   return {
     labels: sorted.map(d => {
       const [year, month] = d.month.split('-');
@@ -692,7 +692,6 @@ const monthlyChartData = computed(() => {
     ],
   };
 });
-
 const statusChartData = computed(() => {
   const data = charts.value.status || [];
   if (!data.length) return null;
