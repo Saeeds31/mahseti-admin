@@ -46,10 +46,17 @@
           </div>
           <div class="col-12 col-sm-6 col-md-2">
             <select v-model="filters.payment_method" @change="getOrders" class="form-select">
-              <option value="">روش پرداخت</option>
+              <option value="">همه روش های پرداخت</option>
               <option value="online">پرداخت آنلاین</option>
               <option value="wallet">کیف پول</option>
               <option value="cod">پرداخت در محل</option>
+            </select>
+          </div>
+          <div class="col-12 col-sm-6 col-md-2">
+            <select v-model="filters.shipping_id" @change="getOrders" class="form-select">
+              <option value="">همه روش های ارسال</option>
+              <option value="2">پیک موتوری</option>
+              <option value="3">تحویل حضوری</option>
             </select>
           </div>
         </div>
@@ -277,6 +284,7 @@ const filters = ref({
   status: "",
   payment_status: "",
   payment_method: "",
+  shipping_id:"",
 });
 const currentPage = ref(1);
 let abortController = null;
