@@ -305,6 +305,11 @@ const routes = [
     component: () => import("@/views/orders/problematic.vue"),
   },
   //
+   {
+    path: "/channels",
+    name: "channels",
+    component: () => import("@/views/channels/ChannelsList.vue"),
+  },
 
   {
     path: "/comments/list",

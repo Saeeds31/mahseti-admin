@@ -271,6 +271,14 @@ const menuItems = ref([
         link: "/shop/shipping",
         icon: "bi-truck"
       },
+
+      {
+        name: "کانال های فروش",
+        permissions: ['channel_view'],
+        link: "/channels",
+        icon: "bi-list"
+      },
+
     ],
   },
   {
