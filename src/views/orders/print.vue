@@ -239,17 +239,18 @@
                                 <div class="summary-row">
                                     <div class="summary-cell">
                                         <span class="cell-label">مبلغ کل:</span>
-                                        <strong class="cell-value">{{ Number(order.subtotal).toLocaleString('fa-IR') }}
+                                        <strong class="cell-value">{{ Number(getSubTotal(order)).toLocaleString('fa-IR')
+                                            }}
                                             تومان</strong>
                                     </div>
                                     <div class="summary-cell">
                                         <span class="cell-label">مبلغ حمل و نقل:</span>
                                         <strong class="cell-value">{{
-                                            Number(order.shipping_cost).toLocaleString('fa-IR') }} تومان</strong>
+                                            Number(getShippingCost(order)).toLocaleString('fa-IR') }} تومان</strong>
                                     </div>
                                     <div class="summary-cell highlight">
                                         <span class="cell-label">مبلغ نهایی:</span>
-                                        <strong class="cell-value">{{ Number(order.total).toLocaleString('fa-IR') }}
+                                        <strong class="cell-value">{{ Number(getShippingCost(order)+getSubTotal(order)).toLocaleString('fa-IR') }}
                                             تومان</strong>
                                     </div>
                                 </div>
@@ -419,6 +420,24 @@ const orders = ref([]);
 const loading = ref(false);
 const orderIds = ref([]);
 const printType = ref('full');
+function getSubTotal(order) {
+    if (!order) return 0;
+    let childs = order.child_orders ? order.child_orders.filter(o => o.status == "paid") : [];
+    let childTotal = childs.reduce((a, b) => {
+        return a + b.subtotal
+    }, 0)
+    return childTotal+order.subtotal
+}
+
+function getShippingCost(order) {
+    if (!order) return 0;
+    let childs = order.child_orders ? order.child_orders.filter(o => o.status == "paid") : [];
+    let childTotal = childs.reduce((a, b) => {
+        return a + b.shipping_cost
+    }, 0)
+    return childTotal+order.shipping_cost
+}
+
 
 // ✅ تاریخ امروز به شمسی
 const getCurrentDate = () => {
