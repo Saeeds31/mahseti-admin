@@ -107,7 +107,12 @@
                     </td>
                     <td class="order-id">#{{ order.id }}</td>
                     <td>{{ order.user?.full_name ?? "-" }}</td>
-                    <td class="address-cell">{{ order.address?.address_line ?? "-" }}</td>
+                    <td class="address-cell">
+                      {{ order.address.province?.name }}
+                      -
+                      {{ order.address.city?.name }}
+                      ,
+                      {{ order.address?.address_line ?? "-" }}</td>
                     <td>{{ order.shipping?.title ?? "-" }}</td>
                     <td class="order-amount">{{ Number(order.total).toLocaleString('fa-IR') }} تومان</td>
                     <td>
@@ -284,7 +289,7 @@ const filters = ref({
   status: "",
   payment_status: "",
   payment_method: "",
-  shipping_id:"",
+  shipping_id: "",
 });
 const currentPage = ref(1);
 let abortController = null;

@@ -927,12 +927,21 @@ const resetItemModal = () => {
     _selectedProduct: null
   }
 }
-
+let abortController1 = null;
 const loadProducts = async (search) => {
   if (!search || search.length < 2) return
   isRequesting.value = true
+
+  if (abortController1) {
+    abortController1.abort();
+  }
+  abortController1 = new AbortController();
+
   try {
-    const { data } = await axios.get('/products', { params: { search } })
+    const { data } = await axios.get('/products-search', {
+      params: { search },
+      signal: abortController1.signal,
+    })
     productOptions.value = await convertToSelectableProduct(data.data)
   } catch (error) {
     console.error('Error loading products:', error)
@@ -940,35 +949,34 @@ const loadProducts = async (search) => {
     isRequesting.value = false
   }
 }
-
 async function convertToSelectableProduct(productList) {
-  let finalList = []
+  let finalList = [];
   productList.forEach(product => {
     if (product.variants.length > 1) {
-      product.variants.forEach((variant) => {
+      product.variants.filter(a => a.stock).forEach((variant) => {
+
         let obj = {
           id: variant.id,
           product_id: product.id,
           price: variant.price,
-          title: `${product.title} || ${variant.values.map((att) => att.value).join("-")} || موجودی: ${variant.stock}`,
+          title: `${variant.id} - ${product.title} || ${variant.values.map((att) => att.value).join("-")} || موجودی: ${variant.stock}`,
           isDisabled: variant.stock > 0 ? false : true
-        }
-        finalList.push(obj)
-      })
-    } else {
+        };
+        finalList.push(obj);
+      });
+    } else if (product.variants.length == 1 && product.variants[0].stock != 0) {
       let obj = {
         isDisabled: product.variants[0].stock > 0 ? false : true,
         id: product.variants[0].id,
-        title: product.title,
+        title: product.variants[0].id + " - " + product.title,
         price: product.price,
         product_id: product.id
-      }
-      finalList.push(obj)
+      };
+      finalList.push(obj);
     }
-  })
-  return finalList
+  });
+  return finalList;
 }
-
 const shippingNormalizer = (node) => {
   return {
     id: node.id,

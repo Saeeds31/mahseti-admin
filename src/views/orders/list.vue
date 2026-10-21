@@ -132,7 +132,7 @@
               <option value="online">پرداخت آنلاین</option>
               <option value="wallet">کیف پول</option>
               <option value="card_transfer">کارت به کارت</option>
-              
+
               <option value="cod">پرداخت در محل</option>
             </select>
           </div>
@@ -212,7 +212,12 @@
                     </td>
                     <td class="order-id">#{{ order.id }}</td>
                     <td>{{ order.user?.full_name ?? "-" }}</td>
-                    <td class="address-cell">{{ order.address?.address_line ?? "-" }}</td>
+                    <td class="address-cell">
+                      {{ order.address.province?.name }}
+                      -
+                      {{ order.address.city?.name }}
+                      ,
+                      {{ order.address?.address_line ?? "-" }}</td>
                     <td>{{ order.shipping?.title ?? "-" }}</td>
                     <td class="order-amount">{{ Number(order.total).toLocaleString('fa-Ir') }} تومان</td>
                     <td>
