@@ -172,7 +172,12 @@
                   <div class="info-row">
                     <i class="bi bi-geo-alt-fill"></i>
                     <span class="info-label">آدرس:</span>
-                    <span class="info-value address-value">{{ order.address?.address_line ?? "-" }}</span>
+                    <span class="info-value address-value">
+                      {{ order.address.province?.name }}
+                      -
+                      {{ order.address.city?.name }}
+                      ,
+                      {{ order.address?.address_line ?? "-" }}</span>
                   </div>
 
                   <div class="info-row">
