@@ -306,7 +306,7 @@ watch(() => form.value.parent_order, async (val) => {
 const fetchAddresses = (asses) => {
     addresses.value = asses.map(a => ({
         id: a.id,
-        label: `${a.receiver_name} - ${a.address_line} - ${a.phone}`
+        label: `${a.province.name} - ${a.city.name} , ${a.receiver_name} - ${a.address_line} - ${a.phone}`
     }));
 };
 
