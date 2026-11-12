@@ -6,13 +6,8 @@
       <div class="card-body p-2 p-md-3">
         <div class="row g-2">
           <div class="col-12 col-sm-8 col-md-4">
-            <input
-              v-model="filters.search"
-              @keyup.enter="fetchData"
-              type="text"
-              class="form-control search-input"
-              placeholder="جستجو بر اساس نام"
-            />
+            <input v-model="filters.search" @keyup.enter="fetchData" type="text" class="form-control search-input"
+              placeholder="جستجو بر اساس نام" />
           </div>
           <div class="col-12 col-sm-4 col-md-2">
             <button @click="fetchData" class="btn btn-primary w-100 search-btn">
@@ -24,12 +19,34 @@
       </div>
     </div>
 
-    <!-- دکمه افزودن -->
-    <div class="mb-2 add-wrapper">
-      <router-link to="/shop/shipping/create" class="btn btn-success add-btn">
-        <i class="bi bi-plus"></i>
-        <span>افزودن روش ارسال</span>
-      </router-link>
+    <!-- نوار ابزار: افزودن + شروع مرتب‌سازی + تایید / انصراف -->
+    <div class="mb-2 toolbar-wrapper">
+      <template v-if="!isSorting">
+        <router-link to="/shop/shipping/create" class="btn btn-success add-btn">
+          <i class="bi bi-plus"></i>
+          <span>افزودن روش ارسال</span>
+        </router-link>
+        <button class="btn btn-outline-primary sort-start-btn" @click="startSorting"
+          :disabled="shippingMethods.length < 2">
+          <i class="bi bi-arrow-down-up"></i>
+          <span>شروع مرتب‌سازی</span>
+        </button>
+      </template>
+      <template v-else>
+        <div class="sort-hint text-muted small me-auto">
+          <i class="bi bi-info-circle"></i>
+          با دکمه‌های <i class="bi bi-arrow-up"></i> / <i class="bi bi-arrow-down"></i> ترتیب را تغییر دهید، سپس تأیید
+          کنید.
+        </div>
+        <button class="btn btn-success" @click="confirmSorting" :disabled="savingOrder">
+          <i class="bi bi-check2-circle"></i>
+          <span>{{ savingOrder ? 'در حال ذخیره...' : 'تأیید ترتیب' }}</span>
+        </button>
+        <button class="btn btn-outline-secondary" @click="cancelSorting" :disabled="savingOrder">
+          <i class="bi bi-x-circle"></i>
+          <span>انصراف</span>
+        </button>
+      </template>
     </div>
 
     <!-- جدول -->
@@ -40,7 +57,6 @@
         </div>
 
         <div v-else>
-          <!-- حالت خالی -->
           <div v-if="!shippingMethods || shippingMethods.length === 0" class="text-center py-5 text-muted">
             <i class="bi bi-inbox fs-1 d-block mb-2"></i>
             <p>روش ارسالی یافت نشد</p>
@@ -52,6 +68,7 @@
               <table class="table table-bordered table-hover mb-0">
                 <thead>
                   <tr>
+                    <th v-if="isSorting" style="width: 48px;" class="text-center">ترتیب</th>
                     <th>نام</th>
                     <th>توضیحات</th>
                     <th class="text-center">هزینه</th>
@@ -60,7 +77,19 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="method in shippingMethods" :key="method.id">
+                  <tr v-for="(method, index) in shippingMethods" :key="method.id" :class="{ 'sorting-row': isSorting }">
+                    <td v-if="isSorting" class="text-center">
+                      <div class="sort-buttons">
+                        <button class="btn btn-sm btn-light sort-btn" @click="moveUp(index)" :disabled="index === 0"
+                          title="بالا">
+                          <i class="bi bi-arrow-up"></i>
+                        </button>
+                        <button class="btn btn-sm btn-light sort-btn" @click="moveDown(index)"
+                          :disabled="index === shippingMethods.length - 1" title="پایین">
+                          <i class="bi bi-arrow-down"></i>
+                        </button>
+                      </div>
+                    </td>
                     <td class="method-title">{{ method.title }}</td>
                     <td class="method-desc">{{ method.description || '—' }}</td>
                     <td class="text-center">
@@ -70,10 +99,7 @@
                       </span>
                     </td>
                     <td class="text-center">
-                      <span
-                        class="status-badge"
-                        :class="method.status ? 'status-active' : 'status-inactive'"
-                      >
+                      <span class="status-badge" :class="method.status ? 'status-active' : 'status-inactive'">
                         <i class="bi" :class="method.status ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
                         {{ method.status ? 'فعال' : 'غیرفعال' }}
                       </span>
@@ -81,12 +107,10 @@
                     <td>
                       <div class="d-flex flex-wrap gap-1 justify-content-center">
                         <router-link :to="`/shop/shipping/${method.id}/edit`" class="btn btn-sm btn-primary">
-                          <i class="bi bi-pen"></i>
-                          <span>ویرایش</span>
+                          <i class="bi bi-pen"></i><span>ویرایش</span>
                         </router-link>
-                        <button @click="deleteMethod(method.id)" class="btn btn-sm btn-danger">
-                          <i class="bi bi-trash3-fill"></i>
-                          <span>حذف</span>
+                        <button @click="deleteMethod(method.id)" class="btn btn-sm btn-danger" :disabled="isSorting">
+                          <i class="bi bi-trash3-fill"></i><span>حذف</span>
                         </button>
                       </div>
                     </td>
@@ -97,12 +121,8 @@
 
             <!-- ===== کارت موبایل ===== -->
             <div class="d-md-none method-cards">
-              <div
-                v-for="method in shippingMethods"
-                :key="method.id"
-                class="method-card"
-                :class="{ 'inactive-card': !method.status }"
-              >
+              <div v-for="(method, index) in shippingMethods" :key="method.id" class="method-card"
+                :class="{ 'inactive-card': !method.status, 'sorting-card': isSorting }">
                 <div class="method-card-header">
                   <div class="method-icon">
                     <i class="bi bi-truck"></i>
@@ -111,10 +131,7 @@
                     <div class="method-name">{{ method.title }}</div>
                     <div class="method-id">شناسه: #{{ method.id }}</div>
                   </div>
-                  <span
-                    class="status-badge-sm"
-                    :class="method.status ? 'status-active' : 'status-inactive'"
-                  >
+                  <span class="status-badge-sm" :class="method.status ? 'status-active' : 'status-inactive'">
                     <i class="bi" :class="method.status ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
                     {{ method.status ? 'فعال' : 'غیرفعال' }}
                   </span>
@@ -126,7 +143,6 @@
                     <span class="info-label">هزینه:</span>
                     <span class="info-value cost-value">{{ method.cost }} تومان</span>
                   </div>
-
                   <div class="info-row desc-row" v-if="method.description">
                     <i class="bi bi-card-text"></i>
                     <span class="info-label">توضیحات:</span>
@@ -134,14 +150,24 @@
                   </div>
                 </div>
 
-                <div class="method-card-actions">
+                <!-- دکمه‌های مرتب‌سازی موبایل -->
+                <div v-if="isSorting" class="mobile-sort-row">
+                  <button class="btn btn-sm btn-outline-primary flex-fill" @click="moveUp(index)"
+                    :disabled="index === 0">
+                    <i class="bi bi-arrow-up"></i> بالا
+                  </button>
+                  <button class="btn btn-sm btn-outline-primary flex-fill" @click="moveDown(index)"
+                    :disabled="index === shippingMethods.length - 1">
+                    <i class="bi bi-arrow-down"></i> پایین
+                  </button>
+                </div>
+
+                <div class="method-card-actions" v-else>
                   <router-link :to="`/shop/shipping/${method.id}/edit`" class="btn btn-sm btn-primary flex-fill">
-                    <i class="bi bi-pen"></i>
-                    <span>ویرایش</span>
+                    <i class="bi bi-pen"></i><span>ویرایش</span>
                   </router-link>
                   <button @click="deleteMethod(method.id)" class="btn btn-sm btn-danger flex-fill">
-                    <i class="bi bi-trash3-fill"></i>
-                    <span>حذف</span>
+                    <i class="bi bi-trash3-fill"></i><span>حذف</span>
                   </button>
                 </div>
               </div>
@@ -154,29 +180,91 @@
 </template>
 
 <script setup>
-/* ===== بدون هیچ تغییری در منطق ===== */
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import Swal from "sweetalert2";
 import axios from "axios";
 
 import { useAdmin } from '@/stores/modules/admin';
 const store = useAdmin();
 const checkPermission = store.checkPermission;
-const shippingMethods = ref({ data: [] });
+
+const shippingMethods = ref([]);
 const loading = ref(false);
 const filters = ref({ search: "" });
 
+const isSorting = ref(false);
+const savingOrder = ref(false);
+// نسخه اصلی ترتیب برای انصراف
+let originalOrderIds = [];
+
+/* ===== دریافت داده ===== */
 const fetchData = async (url = "/shipping-methods") => {
   loading.value = true;
   try {
     const { data } = await axios.get(url, { params: filters.value });
-    shippingMethods.value = data.data;
+    shippingMethods.value = data.data ?? [];
+    // اگر در حال مرتب‌سازی هستیم، بعد از fetch خارجش نکنیم
+    if (!isSorting.value) {
+      originalOrderIds = shippingMethods.value.map(m => m.id);
+    }
   } finally {
     loading.value = false;
   }
 };
 
+/* ===== شروع مرتب‌سازی ===== */
+const startSorting = () => {
+  originalOrderIds = shippingMethods.value.map(m => m.id);
+  isSorting.value = true;
+};
+
+/* ===== حرکت بالا ===== */
+const moveUp = (index) => {
+  if (index <= 0) return;
+  const arr = shippingMethods.value;
+  [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
+};
+
+/* ===== حرکت پایین ===== */
+const moveDown = (index) => {
+  const arr = shippingMethods.value;
+  if (index >= arr.length - 1) return;
+  [arr[index + 1], arr[index]] = [arr[index], arr[index + 1]];
+};
+
+/* ===== تأیید ترتیب ===== */
+const confirmSorting = async () => {
+  savingOrder.value = true;
+  try {
+    await axios.post("/shipping-methods/reorder", {
+      ids: shippingMethods.value.map(m => m.id),
+    });
+    originalOrderIds = shippingMethods.value.map(m => m.id);
+    isSorting.value = false;
+    Swal.fire({
+      toast: true, position: "top-end", icon: "success",
+      title: "ترتیب ذخیره شد", showConfirmButton: false, timer: 1500,
+    });
+  } catch (e) {
+    Swal.fire("خطا", "ذخیره ترتیب ناموفق بود", "error");
+  } finally {
+    savingOrder.value = false;
+  }
+};
+
+/* ===== انصراف ===== */
+const cancelSorting = () => {
+  // بازگردانی به ترتیب اصلی
+  const map = new Map(shippingMethods.value.map(m => [m.id, m]));
+  shippingMethods.value = originalOrderIds
+    .map(id => map.get(id))
+    .filter(Boolean);
+  isSorting.value = false;
+};
+
+/* ===== حذف ===== */
 const deleteMethod = async (id) => {
+  if (isSorting.value) return;
   const result = await Swal.fire({
     title: "آیا مطمئن هستید؟",
     text: "این عملیات قابل بازگشت نیست!",
@@ -185,7 +273,6 @@ const deleteMethod = async (id) => {
     confirmButtonText: "بله، حذف شود",
     cancelButtonText: "انصراف",
   });
-
   if (result.isConfirmed) {
     await axios.delete(`/shipping-methods/${id}`);
     Swal.fire("حذف شد!", "روش ارسال با موفقیت حذف شد.", "success");
@@ -193,9 +280,7 @@ const deleteMethod = async (id) => {
   }
 };
 
-onMounted(() => {
-  fetchData();
-});
+onMounted(() => fetchData());
 </script>
 
 
@@ -227,13 +312,17 @@ onMounted(() => {
   font-weight: 600;
 }
 
-/* ===== دکمه افزودن ===== */
-.add-wrapper {
+/* ===== نوار ابزار ===== */
+.toolbar-wrapper {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
   justify-content: flex-end;
 }
 
-.add-btn {
+.add-btn,
+.sort-start-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -271,7 +360,6 @@ onMounted(() => {
   word-break: break-word;
 }
 
-/* بج هزینه */
 .cost-badge {
   display: inline-flex;
   align-items: center;
@@ -285,7 +373,6 @@ onMounted(() => {
   white-space: nowrap;
 }
 
-/* بج وضعیت */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -327,6 +414,53 @@ onMounted(() => {
   color: #dc2626;
 }
 
+/* ===== حالت مرتب‌سازی ===== */
+.sorting-row {
+  background: #f0f9ff !important;
+  transition: background 0.2s ease;
+}
+
+.sort-buttons {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.sort-btn {
+  padding: 2px 8px;
+  border: 1px solid #dee2e6;
+  background: #fff;
+  line-height: 1;
+  font-size: 0.85rem;
+  color: #495057;
+  transition: all 0.15s ease;
+}
+
+.sort-btn:hover:not(:disabled) {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+.sort-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sorting-card {
+  border: 2px dashed #3b82f6 !important;
+  background: #f0f9ff !important;
+}
+
+.mobile-sort-row {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 4px;
+}
+
 /* ===== کارت‌های موبایل ===== */
 .method-cards {
   display: flex;
@@ -348,7 +482,6 @@ onMounted(() => {
   transform: translateY(-2px);
 }
 
-/* کارت غیرفعال */
 .method-card.inactive-card {
   background: #fefefe;
   border-right: 4px solid #ef4444;
@@ -380,7 +513,6 @@ onMounted(() => {
   font-size: 20px;
   flex-shrink: 0;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
-  transition: all 0.3s ease;
 }
 
 .method-info {
@@ -417,7 +549,7 @@ onMounted(() => {
   font-size: 0.85rem;
 }
 
-.info-row > i {
+.info-row>i {
   color: #6c5ce7;
   font-size: 0.95rem;
   width: 18px;
@@ -445,12 +577,11 @@ onMounted(() => {
   font-weight: 700;
 }
 
-/* توضیحات در موبایل */
 .desc-row {
   align-items: flex-start;
 }
 
-.desc-row > i {
+.desc-row>i {
   margin-top: 3px;
 }
 
@@ -467,7 +598,6 @@ onMounted(() => {
   overflow: hidden;
 }
 
-/* دکمه‌ها */
 .method-card-actions {
   display: flex;
   gap: 8px;
@@ -486,23 +616,24 @@ onMounted(() => {
 }
 
 /* ========================================= */
-/* ===== موبایل (کمتر از 768px) ===== */
-/* ========================================= */
 @media (max-width: 767.98px) {
-  .add-wrapper {
+  .toolbar-wrapper {
     justify-content: stretch;
   }
 
-  .add-btn {
+  .add-btn,
+  .sort-start-btn {
     width: 100%;
     justify-content: center;
     padding: 10px 16px;
   }
+
+  .sort-hint {
+    width: 100%;
+    margin-bottom: 6px;
+  }
 }
 
-/* ========================================= */
-/* ===== موبایل کوچک (کمتر از 400px) ===== */
-/* ========================================= */
 @media (max-width: 399.98px) {
   .method-card {
     padding: 12px;
@@ -533,9 +664,6 @@ onMounted(() => {
   }
 }
 
-/* ========================================= */
-/* ===== دسکتاپ: مخفی کردن کارت‌ها ===== */
-/* ========================================= */
 @media (min-width: 768px) {
   .method-cards {
     display: none;
