@@ -998,7 +998,11 @@ const updateOrderStatus = async () => {
     toast.success("وضعیت سفارش با موفقیت بروزرسانی شد")
     await fetchOrder()
   } catch (e) {
-    toast.error("خطا در بروزرسانی وضعیت سفارش")
+    if (e.response.data.message) {
+      toast.error(e.response.data.message)
+    } else {
+      toast.error("خطا در بروزرسانی وضعیت سفارش")
+    }
     console.error(e)
   } finally {
     updating.value = false
