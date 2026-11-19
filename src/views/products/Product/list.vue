@@ -4,7 +4,8 @@
     <!-- هدر و فیلترها -->
     <div class="card mb-2 header-card">
       <div class="card-header">
-        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2 mb-3">
+        <div
+          class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2 mb-3">
           <h3 class="mb-0 page-title">
             <i class="bi bi-box-fill"></i>
             <span>مدیریت محصولات</span>
@@ -20,12 +21,8 @@
         <form @submit.prevent="getProducts()">
           <div class="row g-2">
             <div class="col-12 col-sm-6 col-md-4">
-              <input
-                v-model="filters.search"
-                type="text"
-                class="form-control search-input"
-                placeholder="جستجو بر اساس نام محصول"
-              />
+              <input v-model="filters.search" type="text" class="form-control search-input"
+                placeholder="جستجو بر اساس نام محصول" />
             </div>
             <div class="col-12 col-sm-6 col-md-2">
               <select v-model="filters.status" class="form-select">
@@ -43,11 +40,25 @@
             </div>
           </div>
         </form>
+        <!-- تب‌ها -->
+
       </div>
     </div>
 
     <!-- لیست -->
     <div class="card">
+      <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+          <button class="nav-link" :class="{ active: activeTab === 'products' }" @click="switchTab('products')">
+            <i class="bi bi-box-seam"></i> محصولات
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" :class="{ active: activeTab === 'trash' }" @click="switchTab('trash')">
+            <i class="bi bi-trash3"></i> زباله‌دان
+          </button>
+        </li>
+      </ul>
       <div class="card-body p-2 p-md-3">
         <div v-if="loading" class="text-center py-5">
           <div class="spinner-border text-primary"></div>
@@ -71,7 +82,7 @@
                   <th>قیمت</th>
                   <th>موجودی</th>
                   <th>تخفیف</th>
-                  <th>وضعیت</th>
+                  <th v-if="activeTab != 'trash'">وضعیت</th>
                   <th>عملیات</th>
                 </tr>
               </thead>
@@ -96,25 +107,36 @@
                     </span>
                     <span v-else class="text-muted">—</span>
                   </td>
-                  <td>
+                  <td v-if="activeTab != 'trash'">
                     <span :class="product.status == 'published' ? 'badge bg-success' : 'badge bg-secondary'">
                       {{ product.status == 'published' ? 'موجود' :
-                         product.status == 'unpublished' ? 'ناموجود' :
-                         product.published_at ? `انتشار در ${new Date(product.published_at).toLocaleString('fa-IR')}` :
-                         'پیش‌نویس' }}
+                        product.status == 'unpublished' ? 'ناموجود' :
+                          product.published_at ? `انتشار در ${new Date(product.published_at).toLocaleString('fa-IR')}` :
+                            'پیش‌نویس' }}
                     </span>
                   </td>
                   <td>
-                    <div class="d-flex flex-wrap gap-1">
-                      <router-link :to="`/products/${product.id}/edit`" class="btn btn-sm btn-warning">
-                        <i class="bi bi-pen"></i>
-                        <span>ویرایش</span>
-                      </router-link>
+                    <!-- در حالت زباله‌دان -->
+                    <template v-if="activeTab === 'trash'">
+                      <button class="btn btn-sm btn-success" @click="restoreFromTrash(product.id)">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                        <span>بازگردانی</span>
+                      </button>
                       <button class="btn btn-sm btn-danger" @click="deleteProduct(product.id)">
                         <i class="bi bi-trash3-fill"></i>
                         <span>حذف</span>
                       </button>
-                    </div>
+                    </template>
+                    <template v-else>
+                      <router-link :to="`/products/${product.id}/edit`" class="btn btn-sm btn-warning">
+                        <i class="bi bi-pen"></i>
+                        <span>ویرایش</span>
+                      </router-link>
+                      <button class="btn btn-sm btn-danger" @click="moveToTrash(product.id)">
+                        <i class="bi bi-trash3-fill"></i>
+                        <span>زباله‌دان</span>
+                      </button>
+                    </template>
                   </td>
                 </tr>
               </tbody>
@@ -123,11 +145,7 @@
 
           <!-- ===== نمایش کارتی در موبایل ===== -->
           <div v-if="products.data && products.data.length > 0" class="d-md-none product-cards">
-            <div
-              v-for="product in products.data"
-              :key="product.id"
-              class="product-card"
-            >
+            <div v-for="product in products.data" :key="product.id" class="product-card">
               <div class="product-card-header">
                 <!-- تصویر محصول -->
                 <div class="product-image-wrapper">
@@ -144,14 +162,11 @@
                   <div class="product-id">شناسه: #{{ product.id }}</div>
 
                   <!-- وضعیت -->
-                  <span
-                    class="status-badge"
-                    :class="product.status == 'published' ? 'status-yes' : 'status-no'"
-                  >
+                  <span class="status-badge" :class="product.status == 'published' ? 'status-yes' : 'status-no'">
                     <i class="bi" :class="product.status == 'published' ? 'bi-check-circle-fill' : 'bi-clock-fill'"></i>
                     {{ product.status == 'published' ? 'موجود' :
-                       product.status == 'unpublished' ? 'ناموجود' :
-                       product.published_at ? 'زمان‌بندی شده' : 'پیش‌نویس' }}
+                      product.status == 'unpublished' ? 'ناموجود' :
+                        product.published_at ? 'زمان‌بندی شده' : 'پیش‌نویس' }}
                   </span>
                 </div>
               </div>
@@ -183,7 +198,8 @@
                 </div>
 
                 <!-- تاریخ انتشار (اگه زمان‌بندی شده) -->
-                <div v-if="product.published_at && product.status != 'published'" class="info-row">
+                <div v-if="product.published_at && product.status != 'published' && activeTab != 'trash'"
+                  class="info-row">
                   <i class="bi bi-calendar-event"></i>
                   <span class="info-label">انتشار:</span>
                   <span class="info-value">{{ new Date(product.published_at).toLocaleDateString('fa-IR') }}</span>
@@ -191,28 +207,35 @@
               </div>
 
               <div class="product-card-actions">
-                <router-link :to="`/products/${product.id}/edit`" class="btn btn-sm btn-warning flex-fill">
-                  <i class="bi bi-pen"></i>
-                  <span>ویرایش</span>
-                </router-link>
-                <button class="btn btn-sm btn-danger flex-fill" @click="deleteProduct(product.id)">
-                  <i class="bi bi-trash3-fill"></i>
-                  <span>حذف</span>
-                </button>
+                <!-- در حالت زباله‌دان -->
+                <template v-if="activeTab === 'trash'">
+                  <button class="btn btn-sm btn-success" @click="restoreFromTrash(product.id)">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                    <span>بازگردانی</span>
+                  </button>
+                  <button class="btn btn-sm btn-danger" @click="deleteProduct(product.id)">
+                    <i class="bi bi-trash3-fill"></i>
+                    <span>حذف</span>
+                  </button>
+                </template>
+                <template v-else>
+                  <router-link :to="`/products/${product.id}/edit`" class="btn btn-sm btn-warning">
+                    <i class="bi bi-pen"></i>
+                    <span>ویرایش</span>
+                  </router-link>
+                  <button class="btn btn-sm btn-danger" @click="moveToTrash(product.id)">
+                    <i class="bi bi-trash3-fill"></i>
+                    <span>زباله‌دان</span>
+                  </button>
+                </template>
               </div>
             </div>
           </div>
 
           <!-- Pagination -->
-          <b-pagination
-            v-model="currentPage"
-            :total-rows="products.total"
-            v-if="products.last_page != 1"
-            :per-page="products.per_page"
-            @Update:modelValue="changePage"
-            align="center"
-            class="mt-3 pagination-responsive"
-          ></b-pagination>
+          <b-pagination v-model="currentPage" :total-rows="products.total" v-if="products.last_page != 1"
+            :per-page="products.per_page" @Update:modelValue="changePage" align="center"
+            class="mt-3 pagination-responsive"></b-pagination>
         </div>
       </div>
     </div>
@@ -225,6 +248,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { useRoute, useRouter } from "vue-router";
 import { useAdmin } from '@/stores/modules/admin';
+const activeTab = ref("products");
 
 const store = useAdmin();
 const checkPermission = store.checkPermission;
@@ -235,11 +259,20 @@ const products = ref({ data: [], meta: null });
 const loading = ref(false);
 const filters = ref({ search: "", status: "" });
 let currentUrl = "/products";
-
-async function getProducts(url = currentUrl) {
+const urls = {
+  products: "/products",
+  trash: "/products-trash",
+};
+function switchTab(tab) {
+  activeTab.value = tab;
+  currentPage.value = 1;
+  getProducts(`${urls[tab]}?page=1`);
+}
+async function getProducts(url = null) {
   loading.value = true;
   try {
-    const { data } = await axios.get(url, { params: filters.value });
+    const targetUrl = url || `${urls[activeTab.value]}?page=${currentPage.value}`;
+    const { data } = await axios.get(targetUrl, { params: filters.value });
     products.value = data;
     currentPage.value = data.current_page;
   } catch (err) {
@@ -248,7 +281,49 @@ async function getProducts(url = currentUrl) {
     loading.value = false;
   }
 }
+// انتقال به زباله‌دان
+const moveToTrash = (id) => {
+  Swal.fire({
+    title: "انتقال به زباله‌دان",
+    text: "آیا مطمئن هستید؟",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "بله، منتقل شود",
+    cancelButtonText: "انصراف",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await axios.patch(`/products/${id}/trash`);
+        Swal.fire("موفق", "محصول به زباله‌دان منتقل شد", "success");
+        getProducts();
+      } catch (err) {
+        Swal.fire("خطا", err.response?.data?.message || "مشکلی پیش آمد", "error");
+      }
+    }
+  });
+};
 
+// بازگردانی از زباله‌دان
+const restoreFromTrash = (id) => {
+  Swal.fire({
+    title: "بازگردانی محصول",
+    text: "محصول به وضعیت پیش‌نویس بازگردانده می‌شود",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "بله، بازگردان",
+    cancelButtonText: "انصراف",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await axios.patch(`/products/${id}/restore`);
+        Swal.fire("موفق", "محصول بازگردانده شد", "success");
+        getProducts();
+      } catch (err) {
+        Swal.fire("خطا", err.response?.data?.message || "مشکلی پیش آمد", "error");
+      }
+    }
+  });
+};
 function changePage(selectedPage) {
   if (selectedPage) {
     router.replace({ name: route.name, query: { page: selectedPage } });
@@ -283,7 +358,7 @@ function imageResolver(path) {
 
 onMounted(() => {
   currentPage.value = route.query.page ?? 1;
-  getProducts(`${currentUrl}?page=${currentPage.value}`);
+  getProducts(`${urls.products}?page=${currentPage.value}`);
 });
 </script>
 
@@ -525,7 +600,7 @@ onMounted(() => {
   font-size: 0.82rem;
 }
 
-.info-row > i {
+.info-row>i {
   color: #6c5ce7;
   font-size: 0.9rem;
   width: 16px;
@@ -637,7 +712,7 @@ onMounted(() => {
     font-size: 0.75rem;
   }
 
-  .info-row > i {
+  .info-row>i {
     font-size: 0.82rem;
     width: 14px;
   }
