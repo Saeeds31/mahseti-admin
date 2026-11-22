@@ -2,7 +2,7 @@
     <div class="container mt-4" v-if="checkPermission(['campaign_view'])">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3><i class="bi bi-megaphone"></i> مدیریت کمپین‌ها</h3>
-            <router-link v-if="checkPermission(['campaign_create'])" to="/campaigns/create" class="btn btn-primary">
+            <router-link v-if="checkPermission(['campaign_store'])" to="/campaigns/create" class="btn btn-primary">
                 <i class="bi bi-plus"></i> افزودن
             </router-link>
         </div>

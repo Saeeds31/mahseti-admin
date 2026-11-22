@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-4" v-if="checkPermission([isEdit ? 'campaign_update' : 'campaign_create'])">
+  <div class="container mt-4" v-if="checkPermission([isEdit ? 'campaign_update' : 'campaign_store'])">
     <h3 class="p-2"><i class="bi bi-megaphone"></i> {{ isEdit ? 'ویرایش کمپین' : 'ایجاد کمپین' }}</h3>
 
     <div v-if="hasOrders" class="alert alert-warning">
