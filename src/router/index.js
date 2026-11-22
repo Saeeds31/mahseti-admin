@@ -305,7 +305,7 @@ const routes = [
     component: () => import("@/views/orders/problematic.vue"),
   },
   //
-   {
+  {
     path: "/channels",
     name: "channels",
     component: () => import("@/views/channels/ChannelsList.vue"),
@@ -432,6 +432,23 @@ const routes = [
     path: "/orders/print",
     name: "orders-print",
     component: () => import("@/views/orders/print.vue"),
+  },
+  {
+    path: "/campaigns",
+    name: "campaigns",
+    component: () => import("@/views/campaigns/CampaignList.vue"),
+  },
+  {
+    path: "/campaigns/create",
+    component: () => import("@/views/campaigns/CampaignForm.vue"),
+  },
+  {
+    path: "/campaigns/:id/edit",
+    component: () => import("@/views/campaigns/CampaignForm.vue"),
+  },
+  {
+    path: "/campaigns/:id/report",
+    component: () => import("@/views/campaigns/CampaignReport.vue"),
   },
   { path: "/:pathMatch(.*)*", redirect: "/dashboard" },
 ];

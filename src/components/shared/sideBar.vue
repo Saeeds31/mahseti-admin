@@ -279,6 +279,18 @@ const menuItems = ref([
         icon: "bi-list"
       },
 
+      {
+        name: "کمپین های فروش",
+        permissions: ['campaign_view'],
+        link: "/campaigns",
+        icon: "bi-megaphone"
+      },
+      {
+        name: "گزارش های کمپین",
+        permissions: ['campaign_view'],
+        link: "/campaigns",
+        icon: "bi-bar-chart-line"
+      },
     ],
   },
   {
