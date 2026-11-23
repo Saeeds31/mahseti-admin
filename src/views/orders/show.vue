@@ -385,6 +385,11 @@
               <div class="summary-header">
                 <i class="fas fa-chart-pie me-2 text-success"></i>
                 <span class="fw-bold">خلاصه مالی</span>
+                <span v-if="order?.campaign">
+                  -
+                  در
+                  {{ order?.campaign?.name }}
+                </span>
               </div>
 
               <div class="info-item">
@@ -403,6 +408,14 @@
                 <span class="info-value discount-value">-{{ formatPrice(order?.discount_amount) }}</span>
               </div>
 
+              <div class="info-item text-success" v-if="order.campaign_discount_amount">
+                <span class="info-label">
+                  <i class="fas fa-tag me-1"></i>
+                  تخفیف
+                  {{ order?.campaign?.name }}
+                </span>
+                <span class="info-value discount-value">-{{ formatPrice(order?.campaign_discount_amount) }}</span>
+              </div>
               <div class="info-item">
                 <span class="info-label">
                   <i class="bi bi-truck"></i>

@@ -240,7 +240,7 @@
                                     <div class="summary-cell">
                                         <span class="cell-label">مبلغ کل:</span>
                                         <strong class="cell-value">{{ Number(getSubTotal(order)).toLocaleString('fa-IR')
-                                            }}
+                                        }}
                                             تومان</strong>
                                     </div>
                                     <div class="summary-cell">
@@ -248,9 +248,17 @@
                                         <strong class="cell-value">{{
                                             Number(getShippingCost(order)).toLocaleString('fa-IR') }} تومان</strong>
                                     </div>
+                                    <div class="summary-cell" v-if="getSubDiscount(order)">
+                                        <span class="cell-label">مبلغ تخفیف:</span>
+                                        <strong class="cell-value">{{
+                                            Number(getSubDiscount(order)).toLocaleString('fa-IR') }} تومان</strong>
+                                    </div>
                                     <div class="summary-cell highlight">
                                         <span class="cell-label">مبلغ نهایی:</span>
-                                        <strong class="cell-value">{{ Number(getShippingCost(order)+getSubTotal(order)).toLocaleString('fa-IR') }}
+                                        <strong class="cell-value">{{
+                                            Number(getShippingCost(order) + getSubTotal(order)
+                                                - getSubDiscount(order)).toLocaleString('fa-IR')
+                                        }}
                                             تومان</strong>
                                     </div>
                                 </div>
@@ -426,7 +434,19 @@ function getSubTotal(order) {
     let childTotal = childs.reduce((a, b) => {
         return a + b.subtotal
     }, 0)
-    return childTotal+order.subtotal
+    return childTotal + order.subtotal
+}
+function getSubDiscount(order) {
+    if (!order) return 0;
+    let childs = order.child_orders ? order.child_orders.filter(o => o.status == "paid") : [];
+    let childTotal = childs.reduce((a, b) => {
+        let dis = b.discount_amount;
+        if (b.campaign) {
+            dis += b.campaign_discount_amount;
+        }
+        return a + dis
+    }, 0)
+    return childTotal + order.discount_amount + order.campaign_discount_amount
 }
 
 function getShippingCost(order) {
@@ -435,7 +455,7 @@ function getShippingCost(order) {
     let childTotal = childs.reduce((a, b) => {
         return a + b.shipping_cost
     }, 0)
-    return childTotal+order.shipping_cost
+    return childTotal + order.shipping_cost
 }
 
 

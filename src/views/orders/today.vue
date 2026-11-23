@@ -126,7 +126,7 @@
                       </span>
                     </td>
                     <td>{{ paymentMethodText(order.payment_method) }}</td>
-                    <td>{{ new Date(order.updated_at).toLocaleDateString('fa') }}</td>
+                    <td>{{ new Date(order.updated_at).toLocaleString('fa') }}</td>
                     <td>{{
                       order.gateway_transactions && order.gateway_transactions.length ?
                         findGateWayName(order.gateway_transactions) : '-' }}</td>
