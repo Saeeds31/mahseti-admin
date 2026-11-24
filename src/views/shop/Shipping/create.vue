@@ -94,7 +94,8 @@
                     </div>
 
                     <div class="col-md-3">
-                        <button class="btn btn-danger" type="button" @click="removeindex(index)">     <i class="bi bi-trash3-fill"></i>
+                        <button class="btn btn-danger" type="button" @click="removeindex(index)"> <i
+                                class="bi bi-trash3-fill"></i>
                             <span>حذف</span></button>
                     </div>
                 </div>
@@ -177,6 +178,8 @@ const submitForm = async () => {
         formData.append(`conditions[${index}][type]`, shippingTypeHandler(shipp))
         formData.append(`conditions[${index}][value]`, shipp.value)
     });
+    formData.append("is_free", 0);
+
     try {
         loading.value = true
         await axios.post('/shipping-methods', formData)

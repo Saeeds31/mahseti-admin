@@ -232,6 +232,7 @@ const updateForm = async () => {
     if (form.value.icon) {
       formData.append("icon", form.value.icon);
     }
+    formData.append("is_free", 0);
 
     conditions.value.forEach((shipp, index) => {
       formData.append(`conditions[${index}][condition]`, shipp.condition)
