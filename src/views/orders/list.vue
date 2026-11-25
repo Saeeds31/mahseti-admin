@@ -219,7 +219,7 @@
                       ,
                       {{ order.address?.address_line ?? "-" }}</td>
                     <td>{{ order.shipping?.title ?? "-" }}</td>
-                    <td class="order-amount">{{ Number(order.total).toLocaleString('fa-Ir') }} تومان</td>
+                    <td class="order-amount">{{ Number(getOrderTotal(order)).toLocaleString('fa-Ir') }} تومان</td>
                     <td>
                       <span class="badge" :class="statusBadge(order.status)">
                         {{ statusText(order.status) }}
@@ -296,7 +296,8 @@
                   <div class="info-row">
                     <i class="bi bi-cash-coin"></i>
                     <span class="info-label">مبلغ:</span>
-                    <span class="info-value amount-value">{{ Number(order.total).toLocaleString('fa-Ir') }} تومان</span>
+                    <span class="info-value amount-value">{{ Number(getOrderTotal(order)).toLocaleString('fa-Ir') }}
+                      تومان</span>
                   </div>
 
                   <div class="info-row">
@@ -433,7 +434,13 @@ const goToPrint = () => {
 
   window.open(route.href, '_blank');
 };
-
+function getOrderTotal(order) {
+  if (!order) return 0;
+  if (!order.child_orders || !order.child_orders.length) return order.total;
+  return order.total + order.child_orders.reduce((a, b) => {
+    return a + b.total
+  }, 0)
+}
 const singlePrint = (orderId) => {
   router.push({
     path: '/orders/print',

@@ -114,7 +114,7 @@
                       ,
                       {{ order.address?.address_line ?? "-" }}</td>
                     <td>{{ order.shipping?.title ?? "-" }}</td>
-                    <td class="order-amount">{{ Number(order.total).toLocaleString('fa-IR') }} تومان</td>
+                    <td class="order-amount">{{ Number(getOrderTotal(order)).toLocaleString('fa-IR') }} تومان</td>
                     <td>
                       <span class="badge" :class="statusBadge(order.status)">
                         {{ statusText(order.status) }}
@@ -235,6 +235,13 @@ import { useAdmin } from '@/stores/modules/admin';
 import Swal from "sweetalert2";
 
 const bulkCompleting = ref(false);
+function getOrderTotal(order) {
+  if (!order) return 0;
+  if (!order.child_orders || !order.child_orders.length) return order.total;
+  return order.total + order.child_orders.reduce((a, b) => {
+    return a + b.total
+  }, 0)
+}
 
 const bulkComplete = async () => {
   if (selectedOrders.value.length === 0) return;

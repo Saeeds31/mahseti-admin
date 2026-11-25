@@ -18,11 +18,26 @@
     </div>
 
     <!-- مرحله اول: اطلاعات اصلی محصول -->
-    <div class="bg-gray" v-if="currentStep === 0">
+    <div class="bg-gray" v-show="currentStep === 0">
       <h3 class="p-2">
         <i class="bi bi-info"></i>
         <span>مرحله اول: اطلاعات اصلی محصول</span>
       </h3>
+
+      <!-- پیغام ثابت بعد از ثبت موفق (تا وقتی ادمین نبندد می‌ماند) -->
+      <div v-if="step1Saved" class="alert alert-success d-flex align-items-start justify-content-between mx-auto"
+        style="width: 95%" role="alert">
+        <div>
+          <strong>&#10003; مرحله اول با موفقیت ذخیره شد.</strong>
+          <div class="mt-1">
+            محصول (شناسه: {{ product?.id }}) ثبت شده است و نیازی به ثبت دوباره نیست.
+            برای ادامه به مرحله بعد بروید. اگر تغییری بدهید و دوباره ذخیره کنید،
+            محصول جدید ساخته نمی‌شود و همین محصول بروزرسانی می‌شود.
+          </div>
+        </div>
+        <button type="button" class="btn-close" @click="step1Saved = false"></button>
+      </div>
+
       <form @submit.prevent="saveStep1">
         <div class="formSetp1 g-3">
           <div class="border-box row">
@@ -78,15 +93,15 @@
 
             <div class="col-md-12 mb-3">
               <label class="form-label">تصاویر</label>
-              <VueFileAgent @select="imagesLoaded" @beforedelete="imagesRemoved" :multiple="true"
-                accept=".jpg,.png,.webp" theme="grid" deletable sortable />
+              <VueFileAgent v-model:rawModelValue="oldImages" @select="imagesLoaded" @beforedelete="imageDeleted"
+                :multiple="true" accept=".jpg,.png,.webp" theme="grid" deletable sortable />
               <span v-if="errors.step1.images" class="text-danger">{{ errors.step1.images[0] }}</span>
             </div>
 
             <div class="col-md-12 mb-3">
               <label class="form-label">ویدئو</label>
-              <VueFileAgent @select="videoLoaded" @beforedelete="videoRemoved" :maxFiles="1" accept=".mp4,.mov,.avi"
-                theme="grid" deletable sortable />
+              <VueFileAgent :raw-model-value="oldMainVideo" @select="videoLoaded" @beforedelete="videoRemoved"
+                :maxFiles="1" accept=".mp4,.mov,.avi" theme="grid" deletable sortable />
               <span v-if="errors.step1.video" class="text-danger">{{ errors.step1.video[0] }}</span>
             </div>
           </div>
@@ -95,8 +110,8 @@
 
             <div class="col-md-12 mb-3">
               <label class="form-label">تصویر اصلی</label>
-              <VueFileAgent @select="imageLoaded" @beforedelete="imageRemoved" :maxFiles="1" accept=".jpg,.png"
-                theme="grid" deletable sortable />
+              <VueFileAgent :raw-model-value="oldMainImage" @select="imageLoaded" @beforedelete="imageRemoved"
+                :maxFiles="1" accept=".jpg,.png" theme="grid" deletable sortable />
               <span v-if="errors.step1.main_image" class="text-danger">{{ errors.step1.main_image[0] }}</span>
             </div>
             <div class="col-md-12 mb-3">
@@ -175,19 +190,19 @@
         <button :disabled="loading" type="submit" class="btn btn-primary mt-3">
           <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
           <i v-else class="bi bi-save2"></i>
-          <span class="mx-2">ذخیره مرحله اول</span>
+          <span class="mx-2">{{ product ? 'بروزرسانی مرحله اول' : 'ذخیره مرحله اول' }}</span>
         </button>
       </form>
     </div>
 
     <!-- مرحله دوم: واریانت‌ها -->
-    <div class="bg-gray" v-else-if="currentStep === 1">
+    <div class="bg-gray" v-show="currentStep === 1">
       <h3 class="p-2">
         <i class="bi bi-list-task"></i>
         <span>مرحله دوم: تنوع‌ها</span>
       </h3>
 
-      <form>
+      <form @submit.prevent>
         <div class="row formSetp2">
           <div class="col-md-12 mb-3">
             <label>ویژگی‌ها:</label>
@@ -229,7 +244,6 @@
                 <td><input v-model="variant.price" type="number" class="form-control" /></td>
                 <td><input v-model="variant.stock" type="number" class="form-control" /></td>
                 <td>
-
                   <div class="col-md-12 mb-3">
                     <label class="form-label">نوع تخفیف</label>
                     <select v-model="variant.discount_type" class="form-select">
@@ -237,7 +251,6 @@
                       <option value="percent">درصدی</option>
                       <option value="fixed">ثابت</option>
                     </select>
-
                   </div>
 
                   <div class="col-md-12 mb-3">
@@ -246,12 +259,10 @@
                   </div>
                 </td>
                 <td>
-
                   <div class="col-md-12 mb-3">
                     <label class="form-label">شروع تخفیف</label>
                     <date-picker display-format="jYYYY/jMM/jDD" placeholder="از تاریخ" format="YYYY-MM-DD"
                       v-model="variant.discount_start_at"></date-picker>
-
                   </div>
                   <div class="col-md-12 mb-3">
                     <label class="form-label">پایان تخفیف</label>
@@ -280,13 +291,13 @@
     </div>
 
     <!-- مرحله سوم: مشخصات -->
-    <div v-else-if="currentStep === 2">
+    <div v-show="currentStep === 2">
       <div class="border-box speci">
         <h3>
           <i class="bi bi-table"></i>
           <span>جدول مشخصات</span>
         </h3>
-        <form>
+        <form @submit.prevent>
           <div class="col-md-12 mb-3">
             <label>مشخصات:</label>
             <Treeselect :valueFormat="'object'" v-model="selectedSpecification" :multiple="true"
@@ -313,7 +324,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, reactive, nextTick, computed } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, reactive, nextTick, computed } from 'vue'
 import Treeselect from 'vue3-treeselect'
 import 'vue3-treeselect/dist/vue3-treeselect.css'
 import Editor from '@/components/shared/Editor.vue'
@@ -325,9 +336,13 @@ import { useAdmin } from '@/stores/modules/admin'
 const store = useAdmin()
 const checkPermission = store.checkPermission
 
+// baseImageAddress در main.js روی window تعریف شده
+const baseImageAddress = window.baseImageAddress
+
 const currentStep = ref(0)
 const product = ref(null)
 const loading = ref(false)
+const step1Saved = ref(false) // پیغام ثابت بعد از ذخیره مرحله اول
 
 const steps = ref([
   { label: 'اطلاعات محصول', icon: 'bi bi-file-text', enabled: true, completed: false },
@@ -359,6 +374,15 @@ const form = ref({
 
 const errors = ref({ step1: {}, step2: {}, step3: {} })
 
+// --- وضعیت آپلودرها ---
+// مقدار rawModelValue آپلودرها؛ بعد از ذخیره از سرور پر می‌شن تا با رفت‌وبرگشت بین مراحل از بین نرن
+const oldImages = ref([])
+const oldMainImage = ref([])
+const oldMainVideo = ref([])
+const deletedImages = ref([]) // آیدی عکس‌های ذخیره‌شده‌ای که ادمین حذف کرده
+const mainImageChanged = ref(false)
+const mainVideoChanged = ref(false)
+
 const categoryOptions = ref([])
 const specification = ref([])
 const attributes = ref([])
@@ -377,24 +401,97 @@ const attributeValuesNormalizer = (node) => ({ id: node.id, label: node.value })
 const specificationNormalizer = (node) => ({ id: node.id, label: node.title, values: node.values })
 
 // --- فایل‌ها ---
+// گالری تصاویر (چندتایی)
+function imagesLoaded(files) {
+  // فقط فایل‌های جدید (دارای file) به لیست ارسال اضافه می‌شن
+  const newFiles = (files || []).map((f) => f.file).filter(Boolean)
+  form.value.images = [...form.value.images, ...newFiles]
+}
+function imageDeleted(fileRecord, removeFn) {
+  if (fileRecord.id) {
+    // عکس ذخیره‌شده روی سرور → برای حذف سمت سرور علامت بزن
+    deletedImages.value.push(fileRecord.id)
+  } else {
+    // عکس جدیدی که هنوز ارسال نشده
+    form.value.images = form.value.images.filter((f) => f !== fileRecord.file)
+  }
+  if (removeFn)
+    removeFn()
+}
+
+// تصویر اصلی (تکی)
 function imageLoaded(files) {
   form.value.main_image = files?.[0]?.file ?? ''
+  mainImageChanged.value = true
 }
-function imageRemoved() {
+function imageRemoved(_, removeFn) {
   form.value.main_image = ''
+  mainImageChanged.value = true
+  if (removeFn)
+    removeFn()
 }
-function imagesLoaded(files) {
-  form.value.images = files.map((file) => file.file)
-}
-function imagesRemoved(fileRecord, removeFn) {
-  form.value.images = form.value.images.filter((f) => f !== fileRecord.file)
-  removeFn()
-}
+
+// ویدئو (تکی)
 function videoLoaded(files) {
   form.value.video = files?.[0]?.file ?? ''
+  mainVideoChanged.value = true
 }
-function videoRemoved() {
+function videoRemoved(_, removeFn) {
   form.value.video = ''
+  mainVideoChanged.value = true
+  if (removeFn)
+    removeFn()
+}
+
+// بعد از ذخیره‌ی موفق، فایل‌ها رو از روی سرور دوباره بخون تا آپلودرها
+// فایل‌های ذخیره‌شده رو نشون بدن و دوباره ارسال نشن.
+async function syncUploadersFromServer() {
+  if (!product.value?.id) return
+  try {
+    const res = await axios.get(`/products/${product.value.id}`)
+    const p = res.data
+    product.value = p
+
+    oldImages.value = (p.images || []).map((img) => ({
+      id: img.id,
+      name: img.path.split('/').pop(),
+      size: 0,
+      type: 'image/jpeg',
+      ext: img.path.split('.').pop(),
+      url: `${baseImageAddress}${img.path}`,
+    }))
+
+    oldMainImage.value = p.main_image
+      ? [{
+        name: p.main_image.split('/').pop(),
+        size: 0,
+        type: 'image/jpeg',
+        ext: p.main_image.split('.').pop(),
+        url: `${baseImageAddress}${p.main_image}`,
+      }]
+      : []
+
+    oldMainVideo.value = p.video
+      ? [{
+        name: p.video.split('/').pop(),
+        size: 0,
+        type: 'video/*',
+        ext: p.video.split('.').pop(),
+        url: `${baseImageAddress}${p.video}`,
+      }]
+      : []
+
+    // همه‌چیز الان روی سرور هست؛ لیست‌های ارسالی رو پاک کن
+    form.value.images = []
+    form.value.main_image = ''
+    form.value.video = ''
+    deletedImages.value = []
+    mainImageChanged.value = false
+    mainVideoChanged.value = false
+  } catch (e) {
+    // خطا در خواندن مجدد، ذخیره‌ی محصول رو خراب نمی‌کنه
+    console.error(e)
+  }
 }
 
 // نام یک ویژگی بر اساس آیدی
@@ -424,10 +521,23 @@ watch(
   { deep: true }
 )
 
+// هشدار هنگام بستن/رفرش صفحه وقتی درخواستی در حال ارسال است
+function beforeUnload(e) {
+  if (loading.value) {
+    e.preventDefault()
+    e.returnValue = ''
+  }
+}
+
 onMounted(() => {
+  window.addEventListener('beforeunload', beforeUnload)
   loadCategories()
   loadAttributes()
   loadSpecification()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', beforeUnload)
 })
 
 async function loadSpecification() {
@@ -445,7 +555,6 @@ async function loadAttributes() {
 
 /**
  * ساخت ترکیب‌های تنوع (cartesian product) برای تعداد دلخواه ویژگی.
- * نسخه قبلی فقط ۲ ویژگی اول رو در نظر می‌گرفت؛ این نسخه برای N ویژگی کار می‌کنه.
  */
 async function generateCombinations() {
   await nextTick()
@@ -455,7 +564,6 @@ async function generateCombinations() {
   let newVariantList = []
 
   if (activeLists.length) {
-    // cartesian product روی همه‌ی ویژگی‌های فعال
     newVariantList = activeLists.reduce(
       (acc, list) => {
         const result = []
@@ -493,31 +601,71 @@ async function generateCombinations() {
 }
 
 async function saveStep1() {
+  if (loading.value) return // جلوگیری از ارسال همزمان/دوباره
   errors.value.step1 = {}
   loading.value = true
   try {
+    const isUpdate = !!product.value?.id
     const formData = new FormData()
+
     Object.keys(form.value).forEach((key) => {
-      if (key === 'images') {
-        form.value.images.forEach((imgfile) => {
-          formData.append('images[]', imgfile)
-        })
-      } else if (key !== 'categories') {
-        formData.append(key, form.value[key])
+      if (key === 'images' || key === 'categories') return // جدا مدیریت می‌شن
+
+      if (key === 'main_image') {
+        if (mainImageChanged.value) {
+          // فایل جدید یا حذف (خالی)
+          if (form.value.main_image) formData.append('main_image', form.value.main_image)
+          else if (isUpdate) formData.append('main_image', '')
+        } else if (isUpdate && product.value.main_image) {
+          // تغییری نکرده؛ مقدار فعلی سرور حفظ بشه
+          formData.append('main_image', product.value.main_image)
+        }
+        return
       }
+
+      if (key === 'video') {
+        if (mainVideoChanged.value) {
+          if (form.value.video) formData.append('video', form.value.video)
+          else if (isUpdate) formData.append('remove_video', '1')
+        }
+        // اگه تغییری نکرده، چیزی ارسال نمی‌شه
+        return
+      }
+
+      const value = form.value[key]
+      formData.append(key, value === null || value === undefined ? '' : value)
+    })
+
+    form.value.images.forEach((imgfile) => {
+      formData.append('images[]', imgfile)
     })
     form.value.categories.forEach((catId) => {
       formData.append('categories[]', catId)
     })
+    deletedImages.value.forEach((id) => {
+      formData.append('deleted_images[]', id)
+    })
 
-    const res = await axios.post('/products', formData)
+    let res
+    if (isUpdate) {
+      // محصول قبلاً ساخته شده → بروزرسانی (نه ساخت محصول جدید)
+      formData.append('_method', 'PUT')
+      res = await axios.post(`/products/${product.value.id}`, formData)
+    } else {
+      res = await axios.post('/products', formData)
+    }
     // بک‌اند مستقیماً آبجکت محصول رو برمی‌گردونه (بدون wrapper success/data)
     product.value = res.data
 
     steps.value[0].completed = true
     steps.value[1].enabled = true
     steps.value[2].enabled = true
-    toast.success('مرحله اول با موفقیت ذخیره شد!')
+    step1Saved.value = true
+    toast.success(isUpdate ? 'مرحله اول با موفقیت بروزرسانی شد!' : 'مرحله اول با موفقیت ذخیره شد!')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+
+    // فایل‌های ذخیره‌شده رو از سرور بخون تا در UI بمونن و دوباره ارسال نشن
+    await syncUploadersFromServer()
   } catch (e) {
     if (e.response?.data?.errors) errors.value.step1 = e.response.data.errors
     toast.error('خطا در ذخیره مرحله اول')
@@ -661,6 +809,7 @@ async function saveStep3() {
 .g-3 {
   gap: 16px;
 }
+
 .steper {
   background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
   color: white !important;

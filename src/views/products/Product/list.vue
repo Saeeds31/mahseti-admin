@@ -18,30 +18,20 @@
       </div>
 
       <div class="card-body p-2 p-md-3">
-        <form @submit.prevent="getProducts()">
-          <div class="row g-2">
-            <div class="col-12 col-sm-6 col-md-4">
-              <input v-model="filters.search" type="text" class="form-control search-input"
-                placeholder="جستجو بر اساس نام محصول" />
-            </div>
-            <div class="col-12 col-sm-6 col-md-2">
-              <select v-model="filters.status" class="form-select">
-                <option value="">همه وضعیت‌ها</option>
-                <option value="published">موجود</option>
-                <option value="unpublished">ناموجود</option>
-                <option value="draft">پیش‌نویس</option>
-              </select>
-            </div>
-            <div class="col-12 col-md-2">
-              <button class="btn btn-primary w-100" type="submit">
-                <i class="bi bi-search"></i>
-                <span>جستجو</span>
-              </button>
-            </div>
+        <div class="row g-2">
+          <div class="col-12 col-sm-6 col-md-4">
+            <input v-model="filters.search" type="text" class="form-control search-input"
+              placeholder="جستجو بر اساس نام محصول" />
           </div>
-        </form>
-        <!-- تب‌ها -->
-
+          <div class="col-12 col-sm-6 col-md-2">
+            <select v-model="filters.status" class="form-select">
+              <option value="">همه وضعیت‌ها</option>
+              <option value="published">موجود</option>
+              <option value="unpublished">ناموجود</option>
+              <option value="draft">پیش‌نویس</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -92,9 +82,6 @@
                   <td>
                     <div class="imageBox">
                       <img :src="imageResolver(product.main_image)" width="64" alt="">
-                      <!-- <span class="counterImages" v-if="product.images">
-                        {{ product.images.length }}
-                      </span> -->
                     </div>
                   </td>
                   <td class="product-title">{{ product.title }}</td>
@@ -116,7 +103,6 @@
                     </span>
                   </td>
                   <td>
-                    <!-- در حالت زباله‌دان -->
                     <template v-if="activeTab === 'trash'">
                       <button class="btn btn-sm btn-success" @click="restoreFromTrash(product.id)">
                         <i class="bi bi-arrow-counterclockwise"></i>
@@ -147,7 +133,6 @@
           <div v-if="products.data && products.data.length > 0" class="d-md-none product-cards">
             <div v-for="product in products.data" :key="product.id" class="product-card">
               <div class="product-card-header">
-                <!-- تصویر محصول -->
                 <div class="product-image-wrapper">
                   <img :src="imageResolver(product.main_image)" alt="">
                   <span class="product-images-count" v-if="product.images && product.images.length">
@@ -156,12 +141,10 @@
                   </span>
                 </div>
 
-                <!-- اطلاعات -->
                 <div class="product-info">
                   <div class="product-name">{{ product.title }}</div>
                   <div class="product-id">شناسه: #{{ product.id }}</div>
 
-                  <!-- وضعیت -->
                   <span class="status-badge" :class="product.status == 'published' ? 'status-yes' : 'status-no'">
                     <i class="bi" :class="product.status == 'published' ? 'bi-check-circle-fill' : 'bi-clock-fill'"></i>
                     {{ product.status == 'published' ? 'موجود' :
@@ -172,21 +155,18 @@
               </div>
 
               <div class="product-card-body">
-                <!-- قیمت -->
                 <div class="info-row">
                   <i class="bi bi-tag-fill"></i>
                   <span class="info-label">قیمت:</span>
                   <span class="info-value price-value">{{ product.price }}</span>
                 </div>
 
-                <!-- موجودی -->
                 <div class="info-row">
                   <i class="bi bi-box-seam"></i>
                   <span class="info-label">موجودی:</span>
                   <span class="info-value">{{ product.stock }}</span>
                 </div>
 
-                <!-- تخفیف -->
                 <div class="info-row">
                   <i class="bi bi-percent"></i>
                   <span class="info-label">تخفیف:</span>
@@ -197,7 +177,6 @@
                   <span v-else class="info-value muted">—</span>
                 </div>
 
-                <!-- تاریخ انتشار (اگه زمان‌بندی شده) -->
                 <div v-if="product.published_at && product.status != 'published' && activeTab != 'trash'"
                   class="info-row">
                   <i class="bi bi-calendar-event"></i>
@@ -207,7 +186,6 @@
               </div>
 
               <div class="product-card-actions">
-                <!-- در حالت زباله‌دان -->
                 <template v-if="activeTab === 'trash'">
                   <button class="btn btn-sm btn-success" @click="restoreFromTrash(product.id)">
                     <i class="bi bi-arrow-counterclockwise"></i>
@@ -243,44 +221,117 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch, onBeforeUnmount } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useRoute, useRouter } from "vue-router";
 import { useAdmin } from '@/stores/modules/admin';
-const activeTab = ref("products");
 
+const activeTab = ref("products");
 const store = useAdmin();
 const checkPermission = store.checkPermission;
+
 const currentPage = ref(1);
 const router = useRouter();
 const route = useRoute();
 const products = ref({ data: [], meta: null });
 const loading = ref(false);
 const filters = ref({ search: "", status: "" });
-let currentUrl = "/products";
+
 const urls = {
   products: "/products",
   trash: "/products-trash",
 };
+
+let abortController = null;
+let debounceTimer = null;
+
+// آیا الان در حالت جستجو/فیلتر هستیم؟
+const isFiltering = () => filters.value.search.trim() !== "" || filters.value.status !== "";
+
+// ساخت URL نهایی برای درخواست
+function buildUrl() {
+  const base = urls[activeTab.value];
+  // اگه در حالت جستجو/فیلتر هستیم → صفحه رو نفرست (کل نتایج)
+  // وگرنه → صفحه جاری
+  if (isFiltering()) return base;
+  return `${base}?page=${currentPage.value}`;
+}
+
+// ===== درخواست اصلی با AbortController =====
+async function getProducts() {
+  if (abortController) abortController.abort();
+  abortController = new AbortController();
+
+  loading.value = true;
+  try {
+    const { data } = await axios.get(buildUrl(), {
+      params: {
+        search: filters.value.search || undefined,
+        status: filters.value.status || undefined,
+      },
+      signal: abortController.signal,
+    });
+    products.value = data;
+    // اگه فیلتر فعاله، currentPage رو دست نزن (چون page نمی‌فرستیم)
+    if (!isFiltering()) {
+      currentPage.value = data.current_page ?? 1;
+    } else {
+      currentPage.value = 1;
+    }
+  } catch (err) {
+    if (axios.isCancel(err)) {
+      // درخواست قبلی کنسل شد، کاری نمی‌کنیم
+      return;
+    }
+    console.error(err);
+  } finally {
+    // فقط اگه همین درخواست آخرین درخواست بود، loading خاموش بشه
+    if (!abortController?.signal.aborted) {
+      loading.value = false;
+    }
+  }
+}
+
+// ===== جستجوی لحظه‌ای (debounce 400ms) =====
+watch(
+  () => filters.value.search,
+  () => {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      currentPage.value = 1;
+      // پاک کردن query page از URL
+      if (route.query.page) {
+        router.replace({ name: route.name, query: {} });
+      }
+      getProducts();
+    }, 400);
+  }
+);
+
+// تغییر فیلتر وضعیت → بلافاصله
+watch(
+  () => filters.value.status,
+  () => {
+    currentPage.value = 1;
+    if (route.query.page) {
+      router.replace({ name: route.name, query: {} });
+    }
+    getProducts();
+  }
+);
+
 function switchTab(tab) {
   activeTab.value = tab;
   currentPage.value = 1;
-  getProducts(`${urls[tab]}?page=1`);
-}
-async function getProducts(url = null) {
-  loading.value = true;
-  try {
-    const targetUrl = url || `${urls[activeTab.value]}?page=${currentPage.value}`;
-    const { data } = await axios.get(targetUrl, { params: filters.value });
-    products.value = data;
-    currentPage.value = data.current_page;
-  } catch (err) {
-    console.error(err);
-  } finally {
-    loading.value = false;
+  filters.value.search = "";
+  filters.value.status = "";
+  if (route.query.page) {
+    router.replace({ name: route.name, query: {} });
   }
+  getProducts();
 }
+
 // انتقال به زباله‌دان
 const moveToTrash = (id) => {
   Swal.fire({
@@ -324,11 +375,15 @@ const restoreFromTrash = (id) => {
     }
   });
 };
+
+// ===== تغییر صفحه =====
 function changePage(selectedPage) {
-  if (selectedPage) {
-    router.replace({ name: route.name, query: { page: selectedPage } });
-    getProducts(`${currentUrl}?page=${selectedPage}`);
-  }
+  if (!selectedPage) return;
+  // اگه در حالت فیلتر هستیم، صفحه‌بندی معنی نداره (کل نتایج نمایش داده میشه)
+  if (isFiltering()) return;
+  currentPage.value = selectedPage;
+  router.replace({ name: route.name, query: { page: selectedPage } });
+  getProducts();
 }
 
 const deleteProduct = (id) => {
@@ -344,7 +399,7 @@ const deleteProduct = (id) => {
       try {
         await axios.delete(`/products/${id}`);
         Swal.fire("موفق", "محصول حذف شد", "success");
-        getProducts(`${currentUrl}?page=${currentPage.value}`);
+        getProducts();
       } catch (err) {
         Swal.fire("خطا", "مشکلی در حذف پیش آمد", "error");
       }
@@ -357,8 +412,13 @@ function imageResolver(path) {
 }
 
 onMounted(() => {
-  currentPage.value = route.query.page ?? 1;
-  getProducts(`${urls.products}?page=${currentPage.value}`);
+  currentPage.value = Number(route.query.page) || 1;
+  getProducts();
+});
+
+onBeforeUnmount(() => {
+  if (debounceTimer) clearTimeout(debounceTimer);
+  if (abortController) abortController.abort();
 });
 </script>
 
@@ -446,24 +506,6 @@ onMounted(() => {
   object-fit: cover;
 }
 
-.counterImages {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  z-index: 10;
-  font-size: 10px;
-  font-weight: 700;
-  transform: translate(-50%, -50%);
-  background: rgba(59, 130, 246, 0.95);
-  color: white;
-  padding: 3px 8px;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
-}
-
 /* ===== بج تخفیف ===== */
 .discount-badge {
   display: inline-flex;
@@ -506,7 +548,6 @@ onMounted(() => {
   margin-bottom: 12px;
 }
 
-/* تصویر بزرگ‌تر در موبایل */
 .product-image-wrapper {
   position: relative;
   width: 90px;
@@ -585,7 +626,6 @@ onMounted(() => {
   color: #b45309;
 }
 
-/* بدنه کارت */
 .product-card-body {
   display: flex;
   flex-direction: column;
@@ -639,7 +679,6 @@ onMounted(() => {
   margin-right: auto;
 }
 
-/* دکمه‌ها */
 .product-card-actions {
   display: flex;
   gap: 8px;
@@ -657,15 +696,11 @@ onMounted(() => {
   font-weight: 600;
 }
 
-/* ===== Pagination ===== */
 .pagination-responsive {
   flex-wrap: wrap;
   justify-content: center;
 }
 
-/* ========================================= */
-/* ===== موبایل (کمتر از 768px) ===== */
-/* ========================================= */
 @media (max-width: 767.98px) {
   .header-card .card-header {
     padding: 12px 14px;
@@ -687,9 +722,6 @@ onMounted(() => {
   }
 }
 
-/* ========================================= */
-/* ===== موبایل کوچک (کمتر از 400px) ===== */
-/* ========================================= */
 @media (max-width: 399.98px) {
   .page-title {
     font-size: 1rem;
@@ -723,9 +755,6 @@ onMounted(() => {
   }
 }
 
-/* ========================================= */
-/* ===== دسکتاپ: مخفی کردن کارت‌ها ===== */
-/* ========================================= */
 @media (min-width: 768px) {
   .product-cards {
     display: none;
